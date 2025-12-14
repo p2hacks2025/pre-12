@@ -19,5 +19,9 @@ func main() {
 		c.JSON(200, gin.H{"status": "ok"})
 	})
 
+	r.GET("/supabase-health", func(c *gin.Context) {
+		c.JSON(200, gin.H{"supabase": "ok"})
+	})
+
 	r.Run(":8080")
 }
