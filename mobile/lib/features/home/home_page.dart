@@ -48,7 +48,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           NavigationDestination(
             icon: Icon(Icons.inbox_outlined),
             selectedIcon: Icon(Icons.inbox),
-            label: 'レビュー',
+            label: '受信レビュー',
           ),
           NavigationDestination(
             icon: Icon(Icons.add_box_outlined),
@@ -58,7 +58,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           NavigationDestination(
             icon: Icon(Icons.rate_review_outlined),
             selectedIcon: Icon(Icons.rate_review),
-            label: '相手へ',
+            label: 'レビューする',
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline),
