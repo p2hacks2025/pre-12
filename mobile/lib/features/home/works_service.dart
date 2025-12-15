@@ -31,20 +31,25 @@ class WorksService {
     try {
       final res = await client.get(uri).timeout(const Duration(seconds: 8));
 
+      // フロント単体で確認できるよう、APIが無い/落ちている場合はダミーにフォールバック
       if (res.statusCode < 200 || res.statusCode >= 300) {
-        throw Exception('作品取得に失敗: ${res.statusCode} ${res.body}');
+        return _dummyWorks;
       }
 
       final decoded = jsonDecode(res.body);
       if (decoded is! List) {
-        throw Exception('作品取得のレスポンス形式が不正です');
+        return _dummyWorks;
       }
 
-      return decoded
+      final works = decoded
           .whereType<Map<String, dynamic>>()
           .map(Work.fromJson)
           .where((w) => w.id.isNotEmpty)
           .toList(growable: false);
+
+      return works.isEmpty ? _dummyWorks : works;
+    } catch (_) {
+      return _dummyWorks;
     } finally {
       if (_client == null) client.close();
     }
