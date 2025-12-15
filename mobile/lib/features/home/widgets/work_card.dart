@@ -17,14 +17,7 @@ class WorkCard extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          if (work.imageUrl.trim().isNotEmpty)
-            Image.network(
-              work.imageUrl,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => _fallback(theme),
-            )
-          else
-            _fallback(theme),
+          _buildImage(theme),
           DecoratedBox(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -93,6 +86,25 @@ class WorkCard extends StatelessWidget {
           color: theme.colorScheme.onSurfaceVariant,
         ),
       ),
+    );
+  }
+
+  Widget _buildImage(ThemeData theme) {
+    final src = work.imageUrl.trim();
+    if (src.isEmpty) return _fallback(theme);
+
+    if (src.startsWith('assets/')) {
+      return Image.asset(
+        src,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => _fallback(theme),
+      );
+    }
+
+    return Image.network(
+      src,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => _fallback(theme),
     );
   }
 }
