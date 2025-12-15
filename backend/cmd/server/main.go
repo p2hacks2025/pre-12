@@ -33,5 +33,7 @@ func main() {
 	// ログイン用 POST エンドポイント
 	r.POST("/login", handler.Login)
 
+	r.GET("/works", handler.GetWorks)
+
 	r.Run(":8080")
 }
