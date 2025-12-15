@@ -38,5 +38,7 @@ func main() {
 
 	r.POST("/swipe", handler.PostSwipe)
 
+	r.GET("/matches", handler.GetMatches)
+
 	r.Run(":8080")
 }
