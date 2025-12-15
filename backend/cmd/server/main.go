@@ -42,5 +42,9 @@ func main() {
 
 	r.GET("/matches", handler.GetMatches)
 
+	r.POST("/review", handler.PostReview)
+
+	r.GET("/reviews", handler.GetReceivedReviews)
+
 	r.Run(":8080")
 }
