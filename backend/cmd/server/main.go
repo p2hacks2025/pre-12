@@ -34,6 +34,8 @@ func main() {
 
 	r.POST("/login", handler.Login)
 
+	r.POST("work", handler.PostWork)
+
 	r.GET("/works", handler.GetWorks)
 
 	r.POST("/swipe", handler.PostSwipe)
