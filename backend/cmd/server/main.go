@@ -30,10 +30,13 @@ func main() {
 		c.JSON(200, gin.H{"supabase": "ok"})
 	})
 
-	// ログイン用 POST エンドポイント
+	r.GET("/debug/works", handler.DebugGetWorks)
+
 	r.POST("/login", handler.Login)
 
 	r.GET("/works", handler.GetWorks)
+
+	r.POST("/swipe", handler.PostSwipe)
 
 	r.Run(":8080")
 }
