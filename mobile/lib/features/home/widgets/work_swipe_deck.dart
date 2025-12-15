@@ -12,13 +12,19 @@ class WorkSwipeDeck extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(worksControllerProvider);
 
-    ref.listen(worksControllerProvider, (prev, next) {
+    // ConsumerWidgetでもref.listenは利用可能。
+    // エラーが変化したときだけ、フレーム後にSnackBar表示する。
+    ref.listen<WorksState>(worksControllerProvider, (prev, next) {
       final err = next.error;
-      if (err != null && err.isNotEmpty) {
+      if (err == null || err.isEmpty) return;
+      if (prev?.error == err) return;
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!context.mounted) return;
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(err)));
-      }
+      });
     });
 
     if (state.isLoading && state.works.isEmpty) {

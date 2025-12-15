@@ -43,15 +43,12 @@ final worksControllerProvider =
 
 class WorksController extends StateNotifier<WorksState> {
   WorksController(this._ref, this._service) : super(WorksState.initial()) {
-    _bootstrap();
+    // コンストラクタ内でasyncを直接呼ぶのを避け、次のイベントループで初期取得。
+    Future.microtask(refresh);
   }
 
   final Ref _ref;
   final WorksService _service;
-
-  Future<void> _bootstrap() async {
-    await refresh();
-  }
 
   Future<void> refresh() async {
     final auth = _ref.read(authControllerProvider);
