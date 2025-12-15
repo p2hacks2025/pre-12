@@ -44,7 +44,6 @@ class WorkSwipeDeck extends ConsumerWidget {
     }
 
     final top = state.works.first;
-    final second = state.works.length >= 2 ? state.works[1] : null;
 
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -52,20 +51,6 @@ class WorkSwipeDeck extends ConsumerWidget {
         builder: (context, constraints) {
           return Stack(
             children: [
-              if (second != null)
-                Positioned.fill(
-                  child: Transform.scale(
-                    scale: 0.97,
-                    child: _CardFrame(
-                      child: WorkCard(
-                        work: second,
-                        onLike: () {
-                          // 下のカードは操作しない
-                        },
-                      ),
-                    ),
-                  ),
-                ),
               Positioned.fill(
                 child: _DismissibleTopCard(
                   work: top,
