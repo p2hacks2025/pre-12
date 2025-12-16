@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:p2hacks_onyx/upload.dart';
 import 'package:p2hacks_onyx/review_screen.dart';
+import 'package:p2hacks_onyx/accept_review_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -18,12 +19,14 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      // デモ: レビュー画面を表示（実際は前の画面から遷移）
-      home: ReviewScreen(
+      // デモ: レビュー受信表示画面（実際は一覧から遷移）
+      home: const AcceptReviewScreen(
         artworkId: 'artwork_123',
         artworkImageUrl: 'https://picsum.photos/400/300',
         artworkTitle: '夕暮れの街',
-        artistName: '山田太郎',
+        reviewerName: '佐藤花子',
+        reviewComment: '素晴らしい作品ですね！夕暮れの雰囲気がとてもよく表現されています。特に色使いが印象的で、温かみのある色調が心に残ります。次回作も楽しみにしています。',
+        reviewDate: '2025年12月16日',
       ),
     );
   }
