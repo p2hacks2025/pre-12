@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:mime/mime.dart';
 
@@ -64,30 +65,27 @@ class _UploadArtworkPageState extends State<UploadArtworkPage> {
     return null;
   }
 
+  bool _canSubmit() {
+    // ファイル検証
+    if (_validateSelectedFile() != null) return false;
+    // タイトル検証
+    final title = _titleCtrl.text.trim();
+    if (title.isEmpty || title.length > 80) return false;
+    // 説明文検証（任意だが長さチェック）
+    if (_descCtrl.text.length > 500) return false;
+    return true;
+  }
+
   Future<void> _pickImage() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: allowedExt.toList(),
-      withData: true, // Web対策（bytesが取れる）
-    );
+    final picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
-    if (result == null) return;
+    if (image == null) return;
 
-    final file = result.files.single;
-    final name = file.name;
-    final bytes = file.bytes;
-    final path = file.path;
-
-    int? size;
-    if (bytes != null) {
-      size = bytes.lengthInBytes;
-    } else if (path != null) {
-      try {
-        size = File(path).lengthSync();
-      } catch (_) {
-        size = null;
-      }
-    }
+    final name = image.name;
+    final path = image.path;
+    final bytes = await image.readAsBytes();
+    final size = bytes.lengthInBytes;
 
     setState(() {
       _fileName = name;
@@ -336,14 +334,26 @@ class _UploadArtworkPageState extends State<UploadArtworkPage> {
 
                 // 送信
                 ElevatedButton(
-                  onPressed: _isSubmitting ? null : _submit,
+                  onPressed: _isSubmitting ? null : (_canSubmit() ? _submit : null),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _canSubmit() && !_isSubmitting
+                        ? Colors.blue
+                        : null,
+                    foregroundColor: _canSubmit() && !_isSubmitting
+                        ? Colors.white
+                        : null,
+                    minimumSize: const Size(double.infinity, 48),
+                  ),
                   child: _isSubmitting
                       ? const SizedBox(
                           height: 18,
                           width: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                         )
-                      : const Text('バックエンドへ送信'),
+                      : Text(
+                          _canSubmit() ? 'バックエンドへ送信' : '入力内容を確認してください',
+                          style: const TextStyle(fontSize: 16),
+                        ),
                 ),
               ],
             ),
