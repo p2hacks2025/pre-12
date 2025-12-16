@@ -64,6 +64,7 @@ func UploadIconsFromLocal() {
 		if err := storage.UploadLocalFileToSupabase(
 			context.Background(),
 			file,
+			"icons",
 			storagePath,
 		); err != nil {
 			log.Printf("failed to upload %s: %v", f.Name(), err)
