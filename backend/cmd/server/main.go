@@ -32,6 +32,8 @@ func main() {
 
 	r.GET("/debug/works", handler.DebugGetWorks)
 
+	r.POST("/sign-up", handler.Signup)
+
 	r.POST("/login", handler.Login)
 
 	r.POST("work", handler.PostWork)
