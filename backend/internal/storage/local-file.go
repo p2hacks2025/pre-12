@@ -8,11 +8,15 @@ import (
 	"path/filepath"
 )
 
-// UploadLocalFileToSupabase はローカル画像ファイルを Supabase にアップロード
-func UploadLocalFileToSupabase(ctx context.Context, file *os.File, path string) error {
-	// ファイル拡張子から Content-Type を決定
+// UploadLocalFileToSupabase はローカル画像ファイルを Supabase Storage にアップロードする
+func UploadLocalFileToSupabase(
+	ctx context.Context,
+	file *os.File,
+	bucket string,
+	path string,
+) error {
 	ext := filepath.Ext(file.Name())
-	contentType := "application/octet-stream" // デフォルト
+	contentType := "application/octet-stream"
 	switch ext {
 	case ".png":
 		contentType = "image/png"
@@ -22,9 +26,13 @@ func UploadLocalFileToSupabase(ctx context.Context, file *os.File, path string) 
 		contentType = "image/gif"
 	}
 
-	url := fmt.Sprintf("%s/storage/v1/object/works/%s", os.Getenv("SUPABASE_URL"), path)
+	url := fmt.Sprintf(
+		"%s/storage/v1/object/%s/%s",
+		os.Getenv("SUPABASE_URL"),
+		bucket,
+		path,
+	)
 
-	// ファイルを直接 Body に渡す（ストリーミング）
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, file)
 	if err != nil {
 		return err
@@ -40,7 +48,7 @@ func UploadLocalFileToSupabase(ctx context.Context, file *os.File, path string) 
 	defer res.Body.Close()
 
 	if res.StatusCode >= 300 {
-		return fmt.Errorf("upload failed: %s", res.Status)
+		return fmt.Errorf("upload failed (%s): %s", bucket, res.Status)
 	}
 
 	return nil
