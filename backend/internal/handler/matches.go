@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/p2hacks2025/pre-12/backend/internal/db"
+	"github.com/p2hacks2025/pre-12/backend/internal/lib"
 )
 
 type MatchResponse struct {
@@ -57,16 +58,19 @@ func GetMatches(c *gin.Context) {
 
 	for rows.Next() {
 		var m MatchResponse
+		var iconPath, workPath string
 		if err := rows.Scan(
 			&m.MatchID,
 			&m.UserID,
 			&m.Username,
-			&m.IconURL,
-			&m.WorkImageURL,
+			&iconPath,
+			&workPath,
 		); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
+		m.IconURL = lib.BuildPublicURL(iconPath)
+		m.WorkImageURL = lib.BuildPublicURL(workPath)
 		matches = append(matches, m)
 	}
 

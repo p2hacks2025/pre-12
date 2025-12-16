@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/p2hacks2025/pre-12/backend/internal/db"
+	"github.com/p2hacks2025/pre-12/backend/internal/lib"
 )
 
 // WorkResponse は Flutter に返す作品情報の構造体
@@ -34,7 +35,7 @@ func GetWorks(c *gin.Context) {
 
 	// パフォーマンス改善: LEFT JOIN で未スワイプ作品を取得
 	rows, err := db.Pool.Query(ctx, `
-		SELECT w.id, w.user_id, u.username, u.icon_url, w.image_url, w.title, w.description, w.created_at
+		SELECT w.id, w.user_id, u.username, u.icon_path, w.image_url, w.title, w.description, w.created_at
 		FROM public.works w
 		JOIN public.users u ON u.id = w.user_id
 		LEFT JOIN public.swipes s ON s.from_user_id = $1 AND s.to_work_id = w.id
@@ -56,13 +57,18 @@ func GetWorks(c *gin.Context) {
 
 	for rows.Next() {
 		var w WorkResponse
+		var iconPath, imagePath string
 		var createdAt time.Time
-		if err := rows.Scan(&w.ID, &w.UserID, &w.Username, &w.IconURL, &w.ImageURL, &w.Title, &w.Description, &createdAt); err != nil {
+		if err := rows.Scan(&w.ID, &w.UserID, &w.Username, &iconPath, &imagePath, &w.Title, &w.Description, &createdAt); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
+		// path → URL に変換
+		w.IconURL = lib.BuildPublicURL(iconPath)
+		w.ImageURL = lib.BuildPublicURL(imagePath)
 		w.CreatedAt = createdAt.Format(time.RFC3339)
+
 		works = append(works, w)
 
 		if newestCreatedAt.IsZero() || createdAt.After(newestCreatedAt) {

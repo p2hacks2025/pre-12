@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/p2hacks2025/pre-12/backend/internal/db"
+	"github.com/p2hacks2025/pre-12/backend/internal/lib"
 )
 
 type ReceivedReviewResponse struct {
@@ -59,20 +60,24 @@ func GetReceivedReviews(c *gin.Context) {
 
 	for rows.Next() {
 		var r ReceivedReviewResponse
+		var iconPath, workPath string
 		if err := rows.Scan(
 			&r.ReviewID,
 			&r.MatchID,
 			&r.UserID,
 			&r.Username,
-			&r.IconURL,
+			&iconPath,
 			&r.WorkID,
-			&r.WorkImageURL,
+			&workPath,
 			&r.Comment,
 			&r.CreatedAt,
 		); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
+		// path → URL
+		r.IconURL = lib.BuildPublicURL(iconPath)
+		r.WorkImageURL = lib.BuildPublicURL(workPath)
 		reviews = append(reviews, r)
 	}
 

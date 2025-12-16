@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/p2hacks2025/pre-12/backend/internal/db"
+	"github.com/p2hacks2025/pre-12/backend/internal/lib"
 )
 
 type DebugWork struct {
@@ -40,17 +41,19 @@ func DebugGetWorks(c *gin.Context) {
 
 	for rows.Next() {
 		var w DebugWork
+		var imagePath string
 		if err := rows.Scan(
 			&w.ID,
 			&w.UserID,
 			&w.Username,
-			&w.ImageURL,
+			&imagePath,
 			&w.Title,
 			&w.Description,
 		); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
+		w.ImageURL = lib.BuildPublicURL(imagePath)
 		works = append(works, w)
 	}
 
