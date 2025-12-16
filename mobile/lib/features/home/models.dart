@@ -34,3 +34,33 @@ class Work {
     );
   }
 }
+
+/// POST /swipes に送るリクエスト（ホーム画面のスワイプ送信）
+class SwipeRequest {
+  const SwipeRequest({
+    required this.fromUserId,
+    required this.toWorkId,
+    required this.isLike,
+  });
+
+  final String fromUserId;
+  final String toWorkId;
+  final bool isLike;
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'from_user_id': fromUserId,
+    'to_work_id': toWorkId,
+    'is_like': isLike,
+  };
+}
+
+/// POST /swipes のレスポンス（現状は message のみ想定）
+class SwipeResponse {
+  const SwipeResponse({required this.message});
+
+  final String message;
+
+  factory SwipeResponse.fromJson(Map<String, dynamic> json) {
+    return SwipeResponse(message: (json['message'] as String?) ?? '');
+  }
+}

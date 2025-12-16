@@ -60,8 +60,14 @@ class WorksService {
     required String toWorkId,
     required bool isLike,
   }) async {
+    await postSwipeRequest(
+      SwipeRequest(fromUserId: fromUserId, toWorkId: toWorkId, isLike: isLike),
+    );
+  }
+
+  Future<SwipeResponse?> postSwipeRequest(SwipeRequest request) async {
     if (backendBaseUrl.trim().isEmpty) {
-      return;
+      return null;
     }
 
     final Uri base;
@@ -71,28 +77,52 @@ class WorksService {
       throw Exception('BACKEND_BASE_URL が不正です: $backendBaseUrl');
     }
 
-    final uri = base.resolve('/swipe');
     final client = _client ?? http.Client();
     try {
-      final res = await client
-          .post(
-            uri,
-            headers: const {'content-type': 'application/json'},
-            body: jsonEncode(<String, dynamic>{
-              'from_user_id': fromUserId,
-              'to_work_id': toWorkId,
-              'is_like': isLike,
-            }),
-          )
-          .timeout(const Duration(seconds: 8));
+      // 仕様は /swipes だが、現状のbackendは /swipe のため両対応にしておく。
+      final primary = base.resolve('/swipes');
+      final fallback = base.resolve('/swipe');
 
-      if (res.statusCode < 200 || res.statusCode >= 300) {
-        throw Exception('スワイプ送信に失敗: ${res.statusCode} ${res.body}');
+      final res = await _postJson(client, primary, request.toJson());
+      final ok = res.statusCode >= 200 && res.statusCode < 300;
+      final shouldFallback = res.statusCode == 404 || res.statusCode == 405;
+
+      final finalRes = ok || !shouldFallback
+          ? res
+          : await _postJson(client, fallback, request.toJson());
+
+      if (finalRes.statusCode < 200 || finalRes.statusCode >= 300) {
+        throw Exception('スワイプ送信に失敗: ${finalRes.statusCode} ${finalRes.body}');
       }
+
+      try {
+        final decoded = jsonDecode(finalRes.body);
+        if (decoded is Map<String, dynamic>) {
+          return SwipeResponse.fromJson(decoded);
+        }
+      } catch (_) {
+        // レスポンスJSONが無い場合も許容
+      }
+
+      return const SwipeResponse(message: '');
     } finally {
       if (_client == null) client.close();
     }
   }
+}
+
+Future<http.Response> _postJson(
+  http.Client client,
+  Uri uri,
+  Map<String, dynamic> json,
+) {
+  return client
+      .post(
+        uri,
+        headers: const {'content-type': 'application/json'},
+        body: jsonEncode(json),
+      )
+      .timeout(const Duration(seconds: 8));
 }
 
 final List<Work> _dummyWorks = <Work>[
