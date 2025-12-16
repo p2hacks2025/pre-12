@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:p2hacks_onyx/upload.dart';
+import 'package:p2hacks_onyx/review_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,7 +18,13 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: UploadArtworkPage(),
+      // デモ: レビュー画面を表示（実際は前の画面から遷移）
+      home: ReviewScreen(
+        artworkId: 'artwork_123',
+        artworkImageUrl: 'https://picsum.photos/400/300',
+        artworkTitle: '夕暮れの街',
+        artistName: '山田太郎',
+      ),
     );
   }
 }
