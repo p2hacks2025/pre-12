@@ -96,10 +96,11 @@ final List<AcceptedReview> _mockAcceptedReviews = <AcceptedReview>[
 ];
 
 // 承認済みレビューのリストを管理するプロバイダー
-final acceptedReviewsProvider =
-    StateProvider<AsyncValue<List<AcceptedReview>>>((ref) {
-  return const AsyncValue.loading();
-});
+final acceptedReviewsProvider = StateProvider<AsyncValue<List<AcceptedReview>>>(
+  (ref) {
+    return const AsyncValue.loading();
+  },
+);
 
 // レビューサービスのプロバイダー
 final reviewServiceProvider = Provider<ReviewService>((ref) {
@@ -119,8 +120,9 @@ class ReviewService {
     // モックデータでUI確認
     if (_useMockAcceptedReviews) {
       await Future.delayed(const Duration(milliseconds: 400));
-      ref.read(acceptedReviewsProvider.notifier).state =
-          AsyncValue.data(_mockAcceptedReviews);
+      ref.read(acceptedReviewsProvider.notifier).state = AsyncValue.data(
+        _mockAcceptedReviews,
+      );
       return;
     }
 
@@ -137,19 +139,23 @@ class ReviewService {
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
-        final reviews =
-            data.map((json) => AcceptedReview.fromJson(json)).toList();
+        final reviews = data
+            .map((json) => AcceptedReview.fromJson(json))
+            .toList();
 
-        ref.read(acceptedReviewsProvider.notifier).state =
-            AsyncValue.data(reviews);
+        ref.read(acceptedReviewsProvider.notifier).state = AsyncValue.data(
+          reviews,
+        );
       } else {
         throw Exception(
           'Failed to load accepted reviews: ${response.statusCode}',
         );
       }
     } catch (e, stack) {
-      ref.read(acceptedReviewsProvider.notifier).state =
-          AsyncValue.error(e, stack);
+      ref.read(acceptedReviewsProvider.notifier).state = AsyncValue.error(
+        e,
+        stack,
+      );
     }
   }
 

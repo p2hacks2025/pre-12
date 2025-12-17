@@ -26,10 +26,7 @@ class _AcceptedReviewListPageState
     final reviews = ref.watch(acceptedReviewsProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('承認済みレビュー'),
-        elevation: 0,
-      ),
+      //appBar: AppBar(title: const Text('承認済みレビュー'), elevation: 0),
       body: reviews.when(
         data: (reviewList) {
           if (reviewList.isEmpty) {
@@ -37,18 +34,11 @@ class _AcceptedReviewListPageState
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.inbox_outlined,
-                    size: 64,
-                    color: Colors.grey,
-                  ),
+                  Icon(Icons.inbox_outlined, size: 64, color: Colors.grey),
                   SizedBox(height: 16),
                   Text(
                     'まだ承認済みレビューがありません',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
-                    ),
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                 ],
               ),
@@ -69,33 +59,21 @@ class _AcceptedReviewListPageState
             ),
           );
         },
-        loading: () => const Center(
-          child: CircularProgressIndicator(),
-        ),
+        loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
-                Icons.error_outline,
-                size: 64,
-                color: Colors.red,
-              ),
+              const Icon(Icons.error_outline, size: 64, color: Colors.red),
               const SizedBox(height: 16),
               Text(
                 'エラーが発生しました',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[700],
-                ),
+                style: TextStyle(fontSize: 16, color: Colors.grey[700]),
               ),
               const SizedBox(height: 8),
               Text(
                 error.toString(),
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey,
-                ),
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
@@ -123,9 +101,7 @@ class _ReviewCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () {
           // レビュー詳細ページへ遷移
@@ -172,33 +148,12 @@ class _ReviewCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.green[100],
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Text(
-                      '承認済み',
-                      style: TextStyle(
-                        color: Colors.green[800],
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
                 ],
               ),
               const SizedBox(height: 16),
               Text(
                 review.comment,
-                style: const TextStyle(
-                  fontSize: 14,
-                  height: 1.5,
-                ),
+                style: const TextStyle(fontSize: 14, height: 1.5),
               ),
               if (review.workTitle != null) ...[
                 const SizedBox(height: 12),
