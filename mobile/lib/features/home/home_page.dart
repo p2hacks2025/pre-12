@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../review_screen.dart';
 import '../auth/auth_controller.dart';
+import '../profile/profile_edit_page.dart';
 import '../review/accepted_review_list_page.dart';
 import 'widgets/work_swipe_deck.dart';
 
@@ -25,7 +26,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       const ReviewListScreen(),
       const _PlaceholderPage(text: '作品投稿'),
       const AcceptedReviewListPage(),
-      _ProfilePage(
+      ProfileEditPage(
         onLogout: () => ref.read(authControllerProvider.notifier).logout(),
       ),
     ];
@@ -68,36 +69,6 @@ class _HomePageState extends ConsumerState<HomePage> {
             icon: Icon(Icons.person_outline),
             selectedIcon: Icon(Icons.person),
             label: 'プロフィール',
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ProfilePage extends ConsumerWidget {
-  const _ProfilePage({required this.onLogout});
-
-  final VoidCallback onLogout;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(authControllerProvider).user;
-
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            user == null ? '未ログイン' : 'ログインユーザー: ${user.displayName}',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          const SizedBox(height: 12),
-          OutlinedButton.icon(
-            onPressed: onLogout,
-            icon: const Icon(Icons.logout),
-            label: const Text('ログアウト'),
           ),
         ],
       ),
