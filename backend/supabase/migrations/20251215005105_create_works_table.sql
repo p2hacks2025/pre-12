@@ -1,0 +1,9 @@
+CREATE TABLE public.works (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  image_path text NOT NULL,
+  title text NOT NULL,
+  description text,
+  created_at timestamp with time zone DEFAULT now(),
+  unique (user_id, image_path)
+);
