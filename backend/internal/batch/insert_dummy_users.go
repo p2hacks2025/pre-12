@@ -17,7 +17,7 @@ func InsertDummyUsers() {
 		IconFile string // ファイル名だけ
 		Bio      string
 	}{
-{"sakura_illust", "user_001@example.com", "ChangeMe-CommonPassword-2025!", "user_001.png", "ある日、人物の美しさに心が奪われたことがきっかけで 都市と自然の共存をテーマに掲げ 細部にこだわりながら全体の調和を大切にし色と光が重なり合い、人物の姿が抽象的に浮かび上がっている。"},
+		{"sakura_illust", "user_001@example.com", "ChangeMe-CommonPassword-2025!", "user_001.png", "ある日、人物の美しさに心が奪われたことがきっかけで 都市と自然の共存をテーマに掲げ 細部にこだわりながら全体の調和を大切にし色と光が重なり合い、人物の姿が抽象的に浮かび上がっている。"},
 		{"ゆきのん", "user_002@example.com", "ChangeMe-CommonPassword-2025!", "user_002.png", "森の中で光が揺らぐ瞬間を見て 忘れかけていた感覚を形として残したいと思い 筆致や色の重なりを何度も調整し透き通るような色合いで表現された風景が、きらきらとしたハイライトに包まれている。"},
 		{"aoi_canvas", "user_003@example.com", "ChangeMe-CommonPassword-2025!", "user_003.png", "森の中で光が揺らぐ瞬間を見て 都市と自然の共存をテーマに掲げ 色彩のグラデーションで奥行きを生み出し中心の抽象を囲むように光が渦巻き、エネルギーが溢れているようだ。"},
 		{"みずいろ絵師", "user_004@example.com", "ChangeMe-CommonPassword-2025!", "user_004.png", "森の中で光が揺らぐ瞬間を見て 見る人に物語を感じてもらいたくて 光の反射を表現するためにメディウムを工夫し色と光が重なり合い、静物の姿が抽象的に浮かび上がっている。"},
