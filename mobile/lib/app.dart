@@ -24,17 +24,7 @@ class App extends ConsumerWidget {
           ? isFirstLaunchAsync.when(
               data: (isFirstLaunch) {
                 if (isFirstLaunch) {
-                  return RegisterScreen(
-                    onNext:
-                        ({
-                          required String username,
-                          required String email,
-                          required String password,
-                        }) async {
-                          await markLaunched();
-                          ref.invalidate(firstLaunchProvider);
-                        },
-                  );
+                  return const RegisterScreen();
                 }
                 return const DummyLoginPage();
               },

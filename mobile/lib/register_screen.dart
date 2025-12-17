@@ -1,14 +1,9 @@
 import 'package:flutter/material.dart';
 
-class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key, this.onNext});
+import 'profile_setup_screen.dart';
 
-  final void Function({
-    required String username,
-    required String email,
-    required String password,
-  })?
-  onNext;
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -46,19 +41,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!_formKey.currentState!.validate()) return;
     if (!_canProceed()) return;
 
-    final onNext = widget.onNext;
-    if (onNext != null) {
-      onNext(
-        username: _usernameCtrl.text.trim(),
-        email: _emailCtrl.text.trim(),
-        password: _passwordCtrl.text.trim(),
-      );
-      return;
-    }
-
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('次はアイコン/自己紹介入力画面（次コミットで実装）')));
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ProfileSetupScreen(
+          username: _usernameCtrl.text.trim(),
+          email: _emailCtrl.text.trim(),
+          password: _passwordCtrl.text.trim(),
+        ),
+      ),
+    );
   }
 
   @override
