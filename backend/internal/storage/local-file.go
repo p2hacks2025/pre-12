@@ -9,11 +9,13 @@ import (
 )
 
 // UploadLocalFileToSupabase はローカル画像ファイルを Supabase Storage にアップロードする
+// method: "POST" or "PUT" を指定可能
 func UploadLocalFileToSupabase(
 	ctx context.Context,
 	file *os.File,
 	bucket string,
 	path string,
+	method string, // POST or PUT
 ) error {
 	ext := filepath.Ext(file.Name())
 	contentType := "application/octet-stream"
@@ -33,7 +35,12 @@ func UploadLocalFileToSupabase(
 		path,
 	)
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, file)
+	// デフォルトで POST にしたい場合は method が空文字なら POST
+	if method == "" {
+		method = http.MethodPost
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, url, file)
 	if err != nil {
 		return err
 	}

@@ -56,7 +56,7 @@ func UploadWorksFromLocal() {
 		}
 
 		// Supabase にアップロード
-		if err := storage.UploadLocalFileToSupabase(context.Background(), file, "works", newPath); err != nil {
+		if err := storage.UploadLocalFileToSupabase(context.Background(), file, "works", newPath, "POST"); err != nil {
 			log.Printf("failed to upload %s: %v", f.Name(), err)
 			file.Close()
 			continue
