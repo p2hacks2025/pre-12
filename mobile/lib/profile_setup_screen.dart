@@ -43,7 +43,22 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   bool _canProceed() {
     final displayName = _displayNameCtrl.text.trim();
     if (displayName.isEmpty) return false;
+    if (displayName.length > 30) return false;
+
+    final bio = _bioCtrl.text.trim();
+    if (bio.length > 200) return false;
     return true;
+  }
+
+  String? _blockingReason() {
+    final displayName = _displayNameCtrl.text.trim();
+    final bio = _bioCtrl.text.trim();
+
+    if (displayName.isEmpty) return '表示名を入力してください。';
+    if (displayName.length > 30) return '表示名は30文字以内にしてください。';
+    if (bio.length > 200) return '自己紹介は200文字以内にしてください。';
+
+    return null;
   }
 
   Future<void> _pickIcon() async {
@@ -93,6 +108,8 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final blockingReason = _blockingReason();
+
     return Scaffold(
       appBar: AppBar(title: const Text('新規登録')),
       body: SafeArea(
@@ -100,6 +117,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
           padding: const EdgeInsets.all(16),
           child: Form(
             key: _formKey,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -189,9 +207,22 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                     }
                     return null;
                   },
+                  onChanged: (_) => setState(() {}),
                 ),
 
                 const SizedBox(height: 24),
+
+                if (blockingReason != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      blockingReason,
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                  ),
 
                 Align(
                   alignment: Alignment.centerRight,
