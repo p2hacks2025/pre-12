@@ -88,23 +88,6 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 }
 
-class _PlaceholderPage extends StatelessWidget {
-  const _PlaceholderPage({required this.text});
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        text,
-        style: Theme.of(context).textTheme.titleMedium,
-        textAlign: TextAlign.center,
-      ),
-    );
-  }
-}
-
 class _ProfilePage extends ConsumerWidget {
   const _ProfilePage({required this.onLogout});
 
@@ -130,6 +113,26 @@ class _ProfilePage extends ConsumerWidget {
             label: const Text('ログアウト'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _PlaceholderPage extends StatelessWidget {
+  const _PlaceholderPage({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Text(
+          text,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
       ),
     );
   }
