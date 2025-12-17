@@ -45,5 +45,5 @@ func Signup(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"id": id, "email": req.Email})
+	c.JSON(http.StatusCreated, gin.H{"user_id": id})
 }
