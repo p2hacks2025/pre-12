@@ -1,107 +1,70 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+  const RegisterScreen({super.key, this.onNext});
+
+  final void Function({
+    required String username,
+    required String email,
+    required String password,
+  })?
+  onNext;
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  // ---- 設定 ----
-  static const String registerEndpoint =
-      'https://example.com/api/auth/register'; // TODO: 自分のAPIへ
-  // ---------------
-
   final _formKey = GlobalKey<FormState>();
   final _usernameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
-  final _passwordConfirmCtrl = TextEditingController();
 
-  bool _isSubmitting = false;
   bool _showPassword = false;
-  bool _showPasswordConfirm = false;
 
   @override
   void dispose() {
     _usernameCtrl.dispose();
     _emailCtrl.dispose();
     _passwordCtrl.dispose();
-    _passwordConfirmCtrl.dispose();
     super.dispose();
   }
 
-  bool _canSubmit() {
+  bool _canProceed() {
     final username = _usernameCtrl.text.trim();
     final email = _emailCtrl.text.trim();
     final password = _passwordCtrl.text.trim();
-    final passwordConfirm = _passwordConfirmCtrl.text.trim();
 
     if (username.isEmpty || email.isEmpty || password.isEmpty) return false;
-    if (password != passwordConfirm) return false;
     if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)) return false;
     if (password.length < 8) return false;
 
     return true;
   }
 
-  Future<void> _submitRegister() async {
+  void _next() {
     if (!_formKey.currentState!.validate()) return;
-    if (!_canSubmit()) return;
+    if (!_canProceed()) return;
 
-    setState(() => _isSubmitting = true);
-
-    try {
-      final payload = {
-        'username': _usernameCtrl.text.trim(),
-        'email': _emailCtrl.text.trim(),
-        'password': _passwordCtrl.text.trim(),
-      };
-
-      final res = await http.post(
-        Uri.parse(registerEndpoint),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(payload),
+    final onNext = widget.onNext;
+    if (onNext != null) {
+      onNext(
+        username: _usernameCtrl.text.trim(),
+        email: _emailCtrl.text.trim(),
+        password: _passwordCtrl.text.trim(),
       );
-
-      if (!mounted) return;
-
-      if (res.statusCode >= 200 && res.statusCode < 300) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('登録完了しました')),
-        );
-        // 登録後に前の画面に戻るか、ログイン画面へ遷移
-        Navigator.pop(context);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('登録失敗: ${res.statusCode}\n${res.body}')),
-        );
-      }
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('通信エラー: $e')),
-      );
-    } finally {
-      if (mounted) setState(() => _isSubmitting = false);
+      return;
     }
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('次はアイコン/自己紹介入力画面（次コミットで実装）')));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('新規登録'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
+      appBar: AppBar(title: const Text('新規登録')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -115,19 +78,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 // タイトル
                 const Text(
                   'アカウントを作成',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 const Text(
                   'P2HAC.KSに参加してレビュー・アップロードを始めましょう',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey,
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.grey),
                   textAlign: TextAlign.center,
                 ),
 
@@ -141,7 +98,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _usernameCtrl,
-                  enabled: !_isSubmitting,
                   decoration: const InputDecoration(
                     hintText: '例：yamada_taro',
                     border: OutlineInputBorder(),
@@ -172,7 +128,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _emailCtrl,
-                  enabled: !_isSubmitting,
                   keyboardType: TextInputType.emailAddress,
                   decoration: const InputDecoration(
                     hintText: '例：yamada@example.com',
@@ -201,7 +156,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _passwordCtrl,
-                  enabled: !_isSubmitting,
                   obscureText: !_showPassword,
                   decoration: InputDecoration(
                     hintText: '8文字以上の英数字を含むパスワード',
@@ -230,96 +184,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                 const SizedBox(height: 16),
 
-                // パスワード確認
-                const Text(
-                  'パスワード（確認）',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: _passwordConfirmCtrl,
-                  enabled: !_isSubmitting,
-                  obscureText: !_showPasswordConfirm,
-                  decoration: InputDecoration(
-                    hintText: 'パスワードをもう一度入力',
-                    border: const OutlineInputBorder(),
-                    prefixIcon: const Icon(Icons.lock),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _showPasswordConfirm
-                            ? Icons.visibility
-                            : Icons.visibility_off,
-                      ),
-                      onPressed: () {
-                        setState(
-                          () => _showPasswordConfirm = !_showPasswordConfirm,
-                        );
-                      },
-                    ),
-                  ),
-                  validator: (v) {
-                    if (v == null || v.isEmpty) {
-                      return 'パスワード確認は必須です。';
-                    }
-                    if (v != _passwordCtrl.text) {
-                      return 'パスワードが一致しません。';
-                    }
-                    return null;
-                  },
-                  onChanged: (_) => setState(() {}),
-                ),
-
                 const SizedBox(height: 24),
 
-                // 登録ボタン
-                ElevatedButton(
-                  onPressed: _isSubmitting
-                      ? null
-                      : (_canSubmit() ? _submitRegister : null),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _canSubmit() && !_isSubmitting
-                        ? Colors.blue
-                        : null,
-                    foregroundColor: _canSubmit() && !_isSubmitting
-                        ? Colors.white
-                        : null,
-                    minimumSize: const Size(double.infinity, 48),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: FilledButton(
+                    onPressed: _canProceed() ? _next : null,
+                    child: const Text('次へ'),
                   ),
-                  child: _isSubmitting
-                      ? const SizedBox(
-                          height: 18,
-                          width: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : Text(
-                          _canSubmit()
-                              ? '登録する'
-                              : '入力内容を確認してください',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // ログインリンク
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text('すでにアカウントをお持ちですか？ '),
-                    GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: const Text(
-                        'ログイン',
-                        style: TextStyle(
-                          color: Colors.blue,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
                 ),
               ],
             ),
