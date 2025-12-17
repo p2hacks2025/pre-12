@@ -3,5 +3,6 @@ create table public.users (
   username text not null,
   email text not null unique,
   password text not null,
-  icon_path text
+  icon_path text,
+  bio text
 );
