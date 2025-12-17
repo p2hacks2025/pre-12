@@ -4,5 +4,6 @@ CREATE TABLE public.works (
   image_path text NOT NULL,
   title text NOT NULL,
   description text,
-  created_at timestamp with time zone DEFAULT now()
+  created_at timestamp with time zone DEFAULT now(),
+  unique (user_id, image_path)
 );
