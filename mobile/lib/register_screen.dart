@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'features/onboarding/register_validation.dart';
 import 'profile_setup_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -15,8 +16,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
 
-  static final RegExp _usernameRe = RegExp(r'^[a-z0-9_]+$');
-
   bool _showPassword = false;
 
   @override
@@ -28,46 +27,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   bool _canProceed() {
-    final username = _usernameCtrl.text.trim();
-    final email = _emailCtrl.text.trim();
-    final password = _passwordCtrl.text.trim();
-
-    if (username.isEmpty || email.isEmpty || password.isEmpty) return false;
-    if (username.length < 3 || username.length > 20) return false;
-    if (!_usernameRe.hasMatch(username)) return false;
-    if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)) return false;
-    if (password.length < 8) return false;
-    if (!RegExp(r'[A-Za-z]').hasMatch(password)) return false;
-    if (!RegExp(r'[0-9]').hasMatch(password)) return false;
-
-    return true;
+    return RegisterValidation.canProceed(
+      username: _usernameCtrl.text,
+      email: _emailCtrl.text,
+      password: _passwordCtrl.text,
+    );
   }
 
   String? _blockingReason() {
-    final username = _usernameCtrl.text.trim();
-    final email = _emailCtrl.text.trim();
-    final password = _passwordCtrl.text;
-
-    if (username.isEmpty) return 'ユーザーネームを入力してください。';
-    if (username.length < 3) return 'ユーザーネームは3文字以上にしてください。';
-    if (username.length > 20) return 'ユーザーネームは20文字以内にしてください。';
-    if (!_usernameRe.hasMatch(username)) {
-      return 'ユーザーネームは英小文字/数字/_(アンダースコア)のみ有効です。';
-    }
-
-    if (email.isEmpty) return 'メールアドレスを入力してください。';
-    if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)) {
-      return '有効なメールアドレスを入力してください。';
-    }
-
-    if (password.isEmpty) return 'パスワードを入力してください。';
-    if (password.length < 8) return 'パスワードは8文字以上にしてください。';
-    if (!RegExp(r'[A-Za-z]').hasMatch(password) ||
-        !RegExp(r'[0-9]').hasMatch(password)) {
-      return 'パスワードは英字と数字をそれぞれ1文字以上含めてください。';
-    }
-
-    return null;
+    return RegisterValidation.blockingReason(
+      username: _usernameCtrl.text,
+      email: _emailCtrl.text,
+      password: _passwordCtrl.text,
+    );
   }
 
   void _next() {
@@ -130,22 +102,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     border: OutlineInputBorder(),
                     prefixIcon: Icon(Icons.person),
                   ),
-                  validator: (v) {
-                    final value = (v ?? '').trim();
-                    if (value.isEmpty) {
-                      return 'ユーザーネームは必須です。';
-                    }
-                    if (value.length < 3) {
-                      return 'ユーザーネームは3文字以上にしてください。';
-                    }
-                    if (value.length > 20) {
-                      return 'ユーザーネームは20文字以内にしてください。';
-                    }
-                    if (!_usernameRe.hasMatch(value)) {
-                      return '英小文字/数字/_(アンダースコア)のみ使用できます。';
-                    }
-                    return null;
-                  },
+                  validator: RegisterValidation.usernameFieldError,
                   onChanged: (_) => setState(() {}),
                 ),
 
@@ -165,15 +122,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     border: OutlineInputBorder(),
                     prefixIcon: Icon(Icons.email),
                   ),
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) {
-                      return 'メールアドレスは必須です。';
-                    }
-                    if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(v)) {
-                      return '有効なメールアドレスを入力してください。';
-                    }
-                    return null;
-                  },
+                  validator: RegisterValidation.emailFieldError,
                   onChanged: (_) => setState(() {}),
                 ),
 
@@ -201,19 +150,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       },
                     ),
                   ),
-                  validator: (v) {
-                    if (v == null || v.isEmpty) {
-                      return 'パスワードは必須です。';
-                    }
-                    if (v.length < 8) {
-                      return 'パスワードは8文字以上にしてください。';
-                    }
-                    if (!RegExp(r'[A-Za-z]').hasMatch(v) ||
-                        !RegExp(r'[0-9]').hasMatch(v)) {
-                      return '英字と数字をそれぞれ1文字以上含めてください。';
-                    }
-                    return null;
-                  },
+                  validator: RegisterValidation.passwordFieldError,
                   onChanged: (_) => setState(() {}),
                 ),
 
