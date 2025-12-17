@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -55,7 +56,9 @@ func UploadLocalFileToSupabase(
 	defer res.Body.Close()
 
 	if res.StatusCode >= 300 {
-		return fmt.Errorf("upload failed (%s): %s", bucket, res.Status)
+		// レスポンスボディを読み取る
+		body, _ := io.ReadAll(res.Body)
+		return fmt.Errorf("upload failed (%s): %s - %s", bucket, res.Status, string(body))
 	}
 
 	return nil
