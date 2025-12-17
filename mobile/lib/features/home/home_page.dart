@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../auth/auth_controller.dart';
+import '../review/accepted_review_list_page.dart';
 import 'widgets/work_swipe_deck.dart';
 
 class HomePage extends ConsumerStatefulWidget {
@@ -16,13 +17,13 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final titles = <String>['ホーム', '受け取ったレビュー', '作品投稿', '相手へのレビュー', 'プロフィール'];
+    final titles = <String>['ホーム', 'レビューする', '投稿', '受信レビュー', 'プロフィール'];
 
     final body = <Widget>[
       const WorkSwipeDeck(),
-      const _PlaceholderPage(text: '自分の作品に対して受け取ったレビュー'),
-      const _PlaceholderPage(text: '作品投稿'),
       const _PlaceholderPage(text: '相手へのレビュー'),
+      const _PlaceholderPage(text: '作品投稿'),
+      const AcceptedReviewListPage(),
       _ProfilePage(
         onLogout: () => ref.read(authControllerProvider.notifier).logout(),
       ),

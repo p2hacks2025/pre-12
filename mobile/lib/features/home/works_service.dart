@@ -101,7 +101,7 @@ final List<Work> _dummyWorks = <Work>[
     userId: 'alice',
     username: 'Alice',
     iconUrl: '',
-    imageUrl: 'assets/works/work_01.jpg',
+    imageUrl: 'assets/works/user_001.png',
     title: 'ダミー作品 1',
     description: '画像は assets/works に置いたものを表示します。',
     createdAt: _epoch,
