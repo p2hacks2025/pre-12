@@ -13,7 +13,7 @@ import (
 
 // WorkResponse は Flutter に返す作品情報の構造体
 type WorkResponse struct {
-	ID          string `json:"id"`
+	ID          string `json:"work_id"`
 	UserID      string `json:"user_id"`
 	Username    string `json:"username"`
 	IconURL     string `json:"icon_url"`
