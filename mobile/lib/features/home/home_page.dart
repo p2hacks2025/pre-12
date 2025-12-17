@@ -22,7 +22,7 @@ class _HomePageState extends ConsumerState<HomePage> {
 
     final body = <Widget>[
       const WorkSwipeDeck(),
-      const _PlaceholderPage(text: '相手へのレビュー'),
+      const ReviewListScreen(),
       const _PlaceholderPage(text: '作品投稿'),
       const AcceptedReviewListPage(),
       _ProfilePage(
@@ -40,20 +40,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
-        onDestinationSelected: (value) async {
-          if (value == 1) {
-            await Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => const ReviewScreen(
-                  artworkId: 'artwork_123',
-                  artworkImageUrl: 'https://picsum.photos/400/300',
-                  artworkTitle: '夕暮れの街',
-                  artistName: '山田太郎',
-                ),
-              ),
-            );
-            return;
-          }
+        onDestinationSelected: (value) {
           setState(() => _index = value);
         },
         destinations: const [
