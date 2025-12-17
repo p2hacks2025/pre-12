@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../review_screen.dart';
 import '../auth/auth_controller.dart';
 import '../review/accepted_review_list_page.dart';
 import 'widgets/work_swipe_deck.dart';
