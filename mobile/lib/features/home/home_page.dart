@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../auth/auth_controller.dart';
+import '../../review_screen.dart';
+import '../../upload.dart';
 import 'widgets/work_swipe_deck.dart';
 
 class HomePage extends ConsumerStatefulWidget {
@@ -16,13 +18,13 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final titles = <String>['ホーム', '受け取ったレビュー', '作品投稿', '相手へのレビュー', 'プロフィール'];
+    final titles = <String>['ホーム', 'レビューする', '投稿', '受信レビュー', 'プロフィール'];
 
     final body = <Widget>[
       const WorkSwipeDeck(),
+      const SizedBox.shrink(),
+      const UploadArtworkPage(),
       const _PlaceholderPage(text: '自分の作品に対して受け取ったレビュー'),
-      const _PlaceholderPage(text: '作品投稿'),
-      const _PlaceholderPage(text: '相手へのレビュー'),
       _ProfilePage(
         onLogout: () => ref.read(authControllerProvider.notifier).logout(),
       ),
@@ -38,7 +40,22 @@ class _HomePageState extends ConsumerState<HomePage> {
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
-        onDestinationSelected: (value) => setState(() => _index = value),
+        onDestinationSelected: (value) async {
+          if (value == 1) {
+            await Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const ReviewScreen(
+                  artworkId: 'artwork_123',
+                  artworkImageUrl: 'https://picsum.photos/400/300',
+                  artworkTitle: '夕暮れの街',
+                  artistName: '山田太郎',
+                ),
+              ),
+            );
+            return;
+          }
+          setState(() => _index = value);
+        },
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.home_outlined),
