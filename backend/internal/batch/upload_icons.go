@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/p2hacks2025/pre-12/backend/internal/db"
 	"github.com/p2hacks2025/pre-12/backend/internal/storage"
 )
@@ -47,12 +46,7 @@ func UploadIconsFromLocal() {
 		}
 
 		// Supabase Storage 上のパス
-		storagePath := fmt.Sprintf(
-			"icons/%s/%s%s",
-			userID,
-			uuid.New().String(),
-			filepath.Ext(f.Name()),
-		)
+		newPath := fmt.Sprintf("%s/%s", userID, f.Name())
 
 		file, err := os.Open(localPath)
 		if err != nil {
@@ -65,7 +59,7 @@ func UploadIconsFromLocal() {
 			context.Background(),
 			file,
 			"icons",
-			storagePath,
+			newPath,
 		); err != nil {
 			log.Printf("failed to upload %s: %v", f.Name(), err)
 			file.Close()

@@ -12,11 +12,12 @@ import (
 
 // UploadToSupabase は
 // multipart/form-data で受け取った画像ファイルを
-// Supabase Storage の works バケットにアップロードする関数
+// 指定された Supabase Storage バケットにアップロードする関数
 func UploadToSupabase(
 	ctx context.Context, // リクエストの寿命・キャンセル管理用（Gin から渡す）
 	fileHeader *multipart.FileHeader, // フォームで送られてきた画像ファイルのメタ情報
-	path string, // works バケット内の保存パス（例: works/{userId}/{uuid}.png）
+	bucket string, // バケット名（例: works, icons）
+	path string, // バケット内の保存パス（例: {userId}/{uuid}.png）
 ) error {
 
 	// ① multipart.FileHeader から実際のファイルを開く
@@ -27,7 +28,6 @@ func UploadToSupabase(
 	defer file.Close()
 
 	// ② ファイルの中身をすべてメモリに読み込む
-	// （画像サイズが極端に大きくない前提）
 	data, err := io.ReadAll(file)
 	if err != nil {
 		return err
@@ -36,13 +36,13 @@ func UploadToSupabase(
 	// ③ Supabase Storage のアップロード先 URL を作る
 	// /storage/v1/object/{bucket}/{path}
 	url := fmt.Sprintf(
-		"%s/storage/v1/object/works/%s",
+		"%s/storage/v1/object/%s/%s",
 		os.Getenv("SUPABASE_URL"), // https://xxxx.supabase.co
-		path,                      // works/{userId}/{filename}
+		bucket,                    // 指定バケット
+		path,                      // バケット内のパス
 	)
 
 	// ④ HTTP POST リクエストを作成
-	// body に画像データをそのまま載せる
 	req, err := http.NewRequestWithContext(
 		ctx,
 		http.MethodPost,
@@ -54,15 +54,12 @@ func UploadToSupabase(
 	}
 
 	// ⑤ 認証ヘッダー
-	// Service Role Key を使うことで
-	// RLS や bucket の制限を無視してアップロードできる（※バックエンド限定）
 	req.Header.Set(
 		"Authorization",
 		"Bearer "+os.Getenv("SUPABASE_SERVICE_ROLE_KEY"),
 	)
 
 	// ⑥ Content-Type を元ファイルのものに合わせる
-	// image/png, image/jpeg など
 	req.Header.Set(
 		"Content-Type",
 		fileHeader.Header.Get("Content-Type"),
@@ -76,7 +73,6 @@ func UploadToSupabase(
 	defer res.Body.Close()
 
 	// ⑧ ステータスコードチェック
-	// 300以上はエラーとして扱う
 	if res.StatusCode >= 300 {
 		return fmt.Errorf("upload failed: %s", res.Status)
 	}

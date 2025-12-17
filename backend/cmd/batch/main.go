@@ -10,6 +10,8 @@ func main() {
 	godotenv.Load()
 	db.Init()
 
+	batch.InsertDummyUsers()
+	batch.InsertDummyWorks()
 	batch.UploadIconsFromLocal()
 	batch.UploadWorksFromLocal()
 }

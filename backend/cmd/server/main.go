@@ -36,6 +36,10 @@ func main() {
 
 	r.POST("/login", handler.Login)
 
+	r.POST("/update-profile", handler.UpdateMyProfile)
+
+	r.GET("/me", handler.GetMyProfile)
+
 	r.POST("work", handler.PostWork)
 
 	r.GET("/works", handler.GetWorks)
