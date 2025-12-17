@@ -12,6 +12,7 @@ func main() {
 
 	batch.InsertDummyUsers()
 	batch.InsertDummyWorks()
+	batch.UploadDefaultIcon()
 	batch.UploadIconsFromLocal()
 	batch.UploadWorksFromLocal()
 }

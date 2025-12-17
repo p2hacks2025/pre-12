@@ -10,12 +10,17 @@ import (
 )
 
 type UserProfileResponse struct {
-	ID       string  `json:"id"`
-	Username string  `json:"username"`
-	Email    string  `json:"email"`
-	IconURL  *string `json:"icon_url"`
-	Bio      *string `json:"bio"`
+	ID       string `json:"id"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	IconURL  string `json:"icon_url"`
+	Bio      string `json:"bio"`
 }
+
+const (
+	DefaultBio      = "よろしくお願いします"
+	DefaultIconPath = "icons/default.png"
+)
 
 func GetMyProfile(c *gin.Context) {
 	userID := c.Query("user_id")
@@ -24,11 +29,16 @@ func GetMyProfile(c *gin.Context) {
 		return
 	}
 
-	var profile UserProfileResponse
-	var iconPath *string
+	ctx := context.Background()
+
+	var (
+		profile  UserProfileResponse
+		iconPath *string
+		bio      *string
+	)
 
 	err := db.Pool.QueryRow(
-		context.Background(),
+		ctx,
 		`SELECT id, username, email, icon_path, bio
 		 FROM public.users
 		 WHERE id = $1`,
@@ -38,7 +48,7 @@ func GetMyProfile(c *gin.Context) {
 		&profile.Username,
 		&profile.Email,
 		&iconPath,
-		&profile.Bio,
+		&bio,
 	)
 
 	if err != nil {
@@ -46,9 +56,18 @@ func GetMyProfile(c *gin.Context) {
 		return
 	}
 
+	// icon_url（必ず返す）
 	if iconPath != nil {
-		url := lib.BuildPublicURL(*iconPath)
-		profile.IconURL = &url
+		profile.IconURL = lib.BuildPublicURL(*iconPath)
+	} else {
+		profile.IconURL = lib.BuildPublicURL(DefaultIconPath)
+	}
+
+	// bio（必ず返す）
+	if bio != nil {
+		profile.Bio = *bio
+	} else {
+		profile.Bio = DefaultBio
 	}
 
 	c.JSON(http.StatusOK, profile)
