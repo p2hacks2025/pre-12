@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
-import 'features/auth/dummy_login_page.dart';
+import 'features/auth/auth_controller.dart';
+import 'features/auth/models.dart';
+import 'features/home/home_page.dart';
 import 'features/onboarding/first_launch.dart';
 
 class ProfileSetupScreen extends ConsumerStatefulWidget {
@@ -69,15 +71,21 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
       await markLaunched();
       ref.invalidate(firstLaunchProvider);
 
+      final displayName = _displayNameCtrl.text.trim();
+      await ref
+          .read(authControllerProvider.notifier)
+          .login(DummyUser(id: widget.username, displayName: displayName));
+
+      if (!mounted) return;
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const HomePage()),
+        (route) => false,
+      );
+    } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('次はバックエンド送信（次コミットで実装）')));
-
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const DummyLoginPage()),
-        (route) => false,
-      );
+      ).showSnackBar(SnackBar(content: Text('ホーム画面への遷移に失敗: $e')));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
