@@ -5,8 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
@@ -15,24 +17,39 @@ import (
 	"github.com/p2hacks2025/pre-12/backend/internal/db"
 )
 
-func setupSignupTest(t *testing.T) *gin.Engine {
-	t.Helper()
-
+/*
+TestMain
+- テスト全体で一度だけ実行
+- .env はあれば読む（必須にしない）
+- DB 初期化をここでまとめる
+*/
+func TestMain(m *testing.M) {
 	gin.SetMode(gin.TestMode)
 
-	if err := godotenv.Load(); err != nil {
-		t.Fatal("failed to load .env")
+	if err := godotenv.Load("../../.env"); err != nil {
+		log.Fatalf("failed to load .env: %v", err)
 	}
 
 	db.Init()
 
+	code := m.Run()
+	os.Exit(code)
+}
+
+/*
+共通ルーターセットアップ
+*/
+func setupSignupRouter() *gin.Engine {
 	r := gin.Default()
 	r.POST("/sign-up", Signup)
 	return r
 }
 
+/*
+正常系：サインアップ成功 & cleanup
+*/
 func TestSignupSuccessAndCleanup(t *testing.T) {
-	r := setupSignupTest(t)
+	r := setupSignupRouter()
 
 	email := fmt.Sprintf("signup_test_%d@example.com", time.Now().UnixNano())
 
@@ -42,7 +59,10 @@ func TestSignupSuccessAndCleanup(t *testing.T) {
 		Password: "password123",
 	}
 
-	jsonBody, _ := json.Marshal(body)
+	jsonBody, err := json.Marshal(body)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	req := httptest.NewRequest(http.MethodPost, "/sign-up", bytes.NewBuffer(jsonBody))
 	req.Header.Set("Content-Type", "application/json")
@@ -64,20 +84,23 @@ func TestSignupSuccessAndCleanup(t *testing.T) {
 		t.Fatal("user_id is empty")
 	}
 
+	// cleanup
 	t.Cleanup(func() {
-		_, err := db.Pool.Exec(
+		if _, err := db.Pool.Exec(
 			context.Background(),
 			"DELETE FROM public.users WHERE id=$1",
 			resp.UserID,
-		)
-		if err != nil {
+		); err != nil {
 			t.Errorf("cleanup failed: %v", err)
 		}
 	})
 }
 
+/*
+異常系：メールアドレス重複
+*/
 func TestSignupEmailAlreadyExists(t *testing.T) {
-	r := setupSignupTest(t)
+	r := setupSignupRouter()
 
 	email := fmt.Sprintf("dup_signup_%d@example.com", time.Now().UnixNano())
 
@@ -87,8 +110,12 @@ func TestSignupEmailAlreadyExists(t *testing.T) {
 		Password: "password123",
 	}
 
-	// ① 初回登録
-	b1, _ := json.Marshal(body)
+	// --- 1回目（成功させる） ---
+	b1, err := json.Marshal(body)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	req1 := httptest.NewRequest(http.MethodPost, "/sign-up", bytes.NewBuffer(b1))
 	req1.Header.Set("Content-Type", "application/json")
 
@@ -107,16 +134,22 @@ func TestSignupEmailAlreadyExists(t *testing.T) {
 	}
 
 	t.Cleanup(func() {
-		db.Pool.Exec(
+		if _, err := db.Pool.Exec(
 			context.Background(),
 			"DELETE FROM public.users WHERE id=$1",
 			resp.UserID,
-		)
+		); err != nil {
+			t.Errorf("cleanup failed: %v", err)
+		}
 	})
 
-	// ② 同じメールで再登録
+	// --- 2回目（同じメール → 409） ---
 	body.Username = "user2"
-	b2, _ := json.Marshal(body)
+
+	b2, err := json.Marshal(body)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	req2 := httptest.NewRequest(http.MethodPost, "/sign-up", bytes.NewBuffer(b2))
 	req2.Header.Set("Content-Type", "application/json")

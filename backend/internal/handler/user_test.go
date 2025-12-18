@@ -1,9 +1,15 @@
 package handler
 
 import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"fmt"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -11,41 +17,63 @@ import (
 )
 
 func TestGetMyProfileSuccess(t *testing.T) {
-	// Gin をテストモードに
 	gin.SetMode(gin.TestMode)
 
-	// .env 読み込み
-	if err := godotenv.Load(); err != nil {
-		t.Fatal("failed to load .env")
+	if err := godotenv.Load("../../.env"); err != nil {
+		log.Fatalf("failed to load .env: %v", err)
 	}
 
-	// DB 初期化
 	db.Init()
 
-	// ルーター作成
 	r := gin.Default()
+	r.POST("/sign-up", Signup)
 	r.GET("/me", GetMyProfile)
 
-	// 既存ユーザーのID（実データに合わせて変更）
-	userID := "c14d7427-e7ca-4987-985e-9cb6f5c9d3f8"
+	body := SignupRequest{
+		Username: "profile_test",
+		Email:    fmt.Sprintf("profile_test_%d@example.com", time.Now().UnixNano()),
+		Password: "password123",
+	}
 
-	// リクエスト作成（クエリパラメータ付き）
+	b, _ := json.Marshal(body)
+	reqSignup := httptest.NewRequest(http.MethodPost, "/sign-up", bytes.NewBuffer(b))
+	reqSignup.Header.Set("Content-Type", "application/json")
+
+	wSignup := httptest.NewRecorder()
+	r.ServeHTTP(wSignup, reqSignup)
+
+	if wSignup.Code != http.StatusCreated {
+		t.Fatalf("signup failed: %s", wSignup.Body.String())
+	}
+
+	var resp struct {
+		UserID string `json:"user_id"`
+	}
+	if err := json.Unmarshal(wSignup.Body.Bytes(), &resp); err != nil {
+		t.Fatal("failed to parse response")
+	}
+	if resp.UserID == "" {
+		t.Fatal("user_id is empty")
+	}
+
+	t.Cleanup(func() {
+		db.Pool.Exec(
+			context.Background(),
+			"DELETE FROM public.users WHERE id=$1",
+			resp.UserID,
+		)
+	})
+
 	req := httptest.NewRequest(
 		http.MethodGet,
-		"/me?user_id="+userID,
+		"/me?user_id="+resp.UserID,
 		nil,
 	)
 
-	// レスポンス取得
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
-	// ステータスコード確認
 	if w.Code != http.StatusOK {
-		t.Fatalf(
-			"expected status 200, got %d, body=%s",
-			w.Code,
-			w.Body.String(),
-		)
+		t.Fatalf("expected 200, got %d: %s", w.Code, w.Body.String())
 	}
 }

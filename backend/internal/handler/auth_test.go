@@ -2,10 +2,14 @@ package handler
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	"fmt"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -13,41 +17,73 @@ import (
 )
 
 func TestLoginSuccess(t *testing.T) {
-	// Gin をテストモードに
 	gin.SetMode(gin.TestMode)
 
-	if err := godotenv.Load(); err != nil {
-		t.Fatal("failed to load .env")
+	if err := godotenv.Load("../../.env"); err != nil {
+		log.Fatalf("failed to load .env: %v", err)
 	}
 
-	// DB 初期化（本番と同じ）
 	db.Init()
 
-	// ルーター作成
 	r := gin.Default()
+	r.POST("/sign-up", Signup)
 	r.POST("/login", Login)
 
-	// リクエストボディ
-	body := map[string]string{
-		"email":    "user_001@example.com",
-		"password": "ChangeMe-CommonPassword-2025!",
+	// --- ユーザー作成 ---
+	email := fmt.Sprintf("login_test_%d@example.com", time.Now().UnixNano())
+	password := "password123"
+
+	signupBody := SignupRequest{
+		Username: "login_test",
+		Email:    email,
+		Password: password,
 	}
-	jsonBody, _ := json.Marshal(body)
 
-	// HTTP リクエスト作成
-	req := httptest.NewRequest(
-		http.MethodPost,
-		"/login",
-		bytes.NewBuffer(jsonBody),
-	)
-	req.Header.Set("Content-Type", "application/json")
+	b1, _ := json.Marshal(signupBody)
+	reqSignup := httptest.NewRequest(http.MethodPost, "/sign-up", bytes.NewBuffer(b1))
+	reqSignup.Header.Set("Content-Type", "application/json")
 
-	// レスポンス取得
-	w := httptest.NewRecorder()
-	r.ServeHTTP(w, req)
+	wSignup := httptest.NewRecorder()
+	r.ServeHTTP(wSignup, reqSignup)
 
-	// ステータスコード確認
-	if w.Code != http.StatusOK {
-		t.Fatalf("expected status 200, got %d, body=%s", w.Code, w.Body.String())
+	if wSignup.Code != http.StatusCreated {
+		t.Fatalf("signup failed: %s", wSignup.Body.String())
+	}
+
+	var signupResp struct {
+		UserID string `json:"user_id"`
+	}
+	if err := json.Unmarshal(wSignup.Body.Bytes(), &signupResp); err != nil {
+		t.Fatal("failed to parse signup response")
+	}
+
+	// cleanup
+	t.Cleanup(func() {
+		db.Pool.Exec(
+			context.Background(),
+			"DELETE FROM public.users WHERE id=$1",
+			signupResp.UserID,
+		)
+	})
+
+	// --- ログイン ---
+	loginBody := map[string]string{
+		"email":    email,
+		"password": password,
+	}
+	b2, _ := json.Marshal(loginBody)
+
+	reqLogin := httptest.NewRequest(http.MethodPost, "/login", bytes.NewBuffer(b2))
+	reqLogin.Header.Set("Content-Type", "application/json")
+
+	wLogin := httptest.NewRecorder()
+	r.ServeHTTP(wLogin, reqLogin)
+
+	if wLogin.Code != http.StatusOK {
+		t.Fatalf(
+			"expected 200, got %d, body=%s",
+			wLogin.Code,
+			wLogin.Body.String(),
+		)
 	}
 }
