@@ -236,10 +236,13 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                         ? null
                         : (_canProceed() ? _next : null),
                     child: _isSubmitting
-                        ? const SizedBox(
+                        ? SizedBox(
                             height: 18,
                             width: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Theme.of(context).colorScheme.onPrimary,
+                            ),
                           )
                         : const Text('次へ'),
                   ),
