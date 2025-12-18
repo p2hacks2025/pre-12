@@ -51,7 +51,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         builder: (_) => ProfileSetupScreen(
           username: _usernameCtrl.text.trim(),
           email: _emailCtrl.text.trim(),
-          password: _passwordCtrl.text.trim(),
         ),
       ),
     );

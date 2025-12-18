@@ -14,12 +14,10 @@ class ProfileSetupScreen extends ConsumerStatefulWidget {
     super.key,
     required this.username,
     required this.email,
-    required this.password,
   });
 
   final String username;
   final String email;
-  final String password;
 
   @override
   ConsumerState<ProfileSetupScreen> createState() => _ProfileSetupScreenState();
