@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../accept_review_screen.dart';
 import 'review_service.dart';
 
 class AcceptedReviewListPage extends ConsumerStatefulWidget {
@@ -105,7 +106,19 @@ class _ReviewCard extends StatelessWidget {
       child: InkWell(
         onTap: () {
           // レビュー詳細ページへ遷移
-          // Navigator.push(...)
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AcceptReviewScreen(
+                artworkId: review.workId ?? '',
+                artworkImageUrl: '', // TODO: 作品画像URLをAPIから取得
+                artworkTitle: review.workTitle ?? '作品',
+                reviewerName: review.userName,
+                reviewComment: review.comment,
+                reviewDate: _formatDate(review.createdAt),
+              ),
+            ),
+          );
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(

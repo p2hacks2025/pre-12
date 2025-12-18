@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../review_screen.dart';
+import '../../upload.dart';
 import '../auth/auth_controller.dart';
 import '../review/accepted_review_list_page.dart';
 import 'widgets/work_swipe_deck.dart';
@@ -23,7 +24,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     final body = <Widget>[
       const WorkSwipeDeck(),
       const ReviewListScreen(),
-      const _PlaceholderPage(text: '作品投稿'),
+      const UploadArtworkPage(),
       const AcceptedReviewListPage(),
       _ProfilePage(
         onLogout: () => ref.read(authControllerProvider.notifier).logout(),
