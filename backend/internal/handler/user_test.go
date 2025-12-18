@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
@@ -19,8 +20,8 @@ import (
 func TestGetMyProfileSuccess(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	if err := godotenv.Load("../../.env"); err != nil {
-		log.Fatalf("failed to load .env: %v", err)
+	if err := godotenv.Load("../../.env"); err != nil && os.Getenv("CI") == "" {
+		log.Fatal(".env not found, aborting")
 	}
 
 	db.Init()
