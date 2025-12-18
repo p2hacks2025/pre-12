@@ -24,7 +24,7 @@ func UploadDefaultIcon() {
 	const storagePath = "default.png"
 
 	// PUT で上書き
-	if err := storage.UploadLocalFileToSupabase(context.Background(), file, bucket, storagePath, "PUT"); err != nil {
+	if err := storage.UploadLocalFileToSupabase(context.Background(), file, bucket, storagePath); err != nil {
 		log.Fatal("failed to upload default icon:", err)
 	}
 

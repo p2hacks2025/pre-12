@@ -45,7 +45,7 @@ func UploadToSupabase(
 	// ④ HTTP POST リクエストを作成
 	req, err := http.NewRequestWithContext(
 		ctx,
-		http.MethodPost,
+		http.MethodPut,
 		url,
 		bytes.NewReader(data),
 	)
