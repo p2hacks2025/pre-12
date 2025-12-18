@@ -62,19 +62,26 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   }
 
   Future<void> _pickIcon() async {
-    final picker = ImagePicker();
-    final xfile = await picker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 512,
-      maxHeight: 512,
-      imageQuality: 85,
-    );
-    if (xfile == null) return;
+    try {
+      final picker = ImagePicker();
+      final xfile = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 85,
+      );
+      if (xfile == null) return;
 
-    final bytes = await xfile.readAsBytes();
-    if (!mounted) return;
+      final bytes = await xfile.readAsBytes();
+      if (!mounted) return;
 
-    setState(() => _iconBytes = bytes);
+      setState(() => _iconBytes = bytes);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('アイコン画像の選択に失敗しました: $e')));
+    }
   }
 
   Future<void> _next() async {
