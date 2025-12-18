@@ -10,7 +10,7 @@ import (
 )
 
 type DebugWork struct {
-	ID          string `json:"id"`
+	ID          string `json:"work_id"`
 	UserID      string `json:"user_id"`
 	Username    string `json:"username"`
 	ImageURL    string `json:"image_url"`
@@ -24,7 +24,7 @@ func DebugGetWorks(c *gin.Context) {
 			w.id,
 			w.user_id,
 			u.username,
-			w.image_url,
+			w.image_path,
 			w.title,
 			w.description
 		FROM public.works w

@@ -35,7 +35,7 @@ func GetWorks(c *gin.Context) {
 
 	// パフォーマンス改善: LEFT JOIN で未スワイプ作品を取得
 	rows, err := db.Pool.Query(ctx, `
-		SELECT w.id, w.user_id, u.username, u.icon_path, w.image_url, w.title, w.description, w.created_at
+		SELECT w.id, w.user_id, u.username, u.icon_path, w.image_path, w.title, w.description, w.created_at
 		FROM public.works w
 		JOIN public.users u ON u.id = w.user_id
 		LEFT JOIN public.swipes s ON s.from_user_id = $1 AND s.to_work_id = w.id
