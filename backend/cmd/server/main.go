@@ -30,6 +30,8 @@ func main() {
 		c.JSON(200, gin.H{"supabase": "ok"})
 	})
 
+	r.GET("/debug/users", handler.DebugGetUsers)
+
 	r.GET("/debug/works", handler.DebugGetWorks)
 
 	r.POST("/sign-up", handler.Signup)
