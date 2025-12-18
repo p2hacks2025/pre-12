@@ -36,5 +36,21 @@ jobs:
       - name: Install dependencies
         run: go mod download
 
-      - name: Run tests
-        run: go test ./...
+      # 型チェック（コンパイルチェック）
+      - name: Go Build
+        run: go build ./...
+
+      # 静的解析（潜在的バグ検知）
+      - name: Go Vet
+        run: go vet ./...
+
+      # Lint（コードスタイル）
+      - name: GolangCI-Lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.53.3
+          args: run
+
+      # テスト
+      - name: Run Tests
+        run: go test ./... -v

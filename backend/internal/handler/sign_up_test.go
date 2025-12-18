@@ -26,8 +26,8 @@ TestMain
 func TestMain(m *testing.M) {
 	gin.SetMode(gin.TestMode)
 
-	if err := godotenv.Load("../../.env"); err != nil && os.Getenv("CI") == "" {
-		log.Fatal(".env not found, aborting")
+	if err := godotenv.Load("../../.env"); err != nil {
+		log.Println(".env not found, relying on environment variables")
 	}
 
 	db.Init()

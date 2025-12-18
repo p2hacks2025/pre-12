@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 	"time"
 
@@ -20,8 +19,8 @@ import (
 func TestLoginSuccess(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	if err := godotenv.Load("../../.env"); err != nil && os.Getenv("CI") == "" {
-		log.Fatal(".env not found, aborting")
+	if err := godotenv.Load("../../.env"); err != nil {
+		log.Println(".env not found, relying on environment variables")
 	}
 
 	db.Init()
