@@ -96,12 +96,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   'ユーザーネーム',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
+                const SizedBox(height: 4),
+                const Text(
+                  '使用できる文字: 英小文字・数字・_(アンダースコア)',
+                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                ),
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _usernameCtrl,
                   decoration: const InputDecoration(
                     hintText: '例：yamada_taro',
-                    helperText: '使用できる文字: 英小文字・数字・_(アンダースコア)',
                     border: OutlineInputBorder(),
                     prefixIcon: Icon(Icons.person),
                   ),
@@ -135,6 +139,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const Text(
                   'パスワード',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  '8文字以上、英字と数字を含めてください',
+                  style: TextStyle(fontSize: 14, color: Colors.grey),
                 ),
                 const SizedBox(height: 8),
                 TextFormField(
