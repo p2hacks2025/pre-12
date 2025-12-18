@@ -7,7 +7,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/p2hacks2025/pre-12/backend/internal/db"
-	"github.com/p2hacks2025/pre-12/backend/internal/lib"
 	"github.com/p2hacks2025/pre-12/backend/internal/storage"
 )
 
@@ -28,11 +27,11 @@ func UpdateMyProfile(c *gin.Context) {
 	fileHeader, err := c.FormFile("icon")
 	var iconPath *string
 	if err == nil {
-		// 保存パスをバケット名と合わせて生成
-		newPath := userID + "/" + fileHeader.Filename
+		// 保存パスをバケット名を含めて生成
+		newPath := "icons/" + userID + "/" + fileHeader.Filename
 
 		// Supabase Storage にアップロード（同じパスなら上書き）
-		if err := storage.UploadToSupabase(c, fileHeader, "icons", newPath); err != nil {
+		if err := storage.UploadToSupabase(c, fileHeader, "icons", userID+"/"+fileHeader.Filename); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to upload icon"})
 			return
 		}
@@ -75,15 +74,7 @@ func UpdateMyProfile(c *gin.Context) {
 		return
 	}
 
-	// 公開 URL を返す場合
-	var iconURL *string
-	if iconPath != nil {
-		url := lib.BuildPublicURL("icons/" + *iconPath)
-		iconURL = &url
-	}
-
 	c.JSON(http.StatusOK, gin.H{
-		"message":  "profile updated",
-		"icon_url": iconURL,
+		"message": "profile updated",
 	})
 }
