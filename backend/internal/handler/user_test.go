@@ -15,7 +15,7 @@ func TestGetMyProfileSuccess(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	// .env 読み込み
-	if err := godotenv.Load("../../.env"); err != nil {
+	if err := godotenv.Load(); err != nil {
 		t.Fatal("failed to load .env")
 	}
 

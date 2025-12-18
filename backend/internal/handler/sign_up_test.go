@@ -20,7 +20,7 @@ func setupSignupTest(t *testing.T) *gin.Engine {
 
 	gin.SetMode(gin.TestMode)
 
-	if err := godotenv.Load("../../.env"); err != nil {
+	if err := godotenv.Load(); err != nil {
 		t.Fatal("failed to load .env")
 	}
 

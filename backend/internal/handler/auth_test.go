@@ -16,7 +16,7 @@ func TestLoginSuccess(t *testing.T) {
 	// Gin をテストモードに
 	gin.SetMode(gin.TestMode)
 
-	if err := godotenv.Load("../../.env"); err != nil {
+	if err := godotenv.Load(); err != nil {
 		t.Fatal("failed to load .env")
 	}
 
