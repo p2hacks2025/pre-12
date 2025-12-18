@@ -116,122 +116,153 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     final blockingReason = _blockingReason();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('新規登録')),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: const Text('新規登録'),
+      ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Form(
-            key: _formKey,
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 24),
-                const Text(
-                  'プロフィールを作成',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'アイコンと自己紹介を設定しましょう',
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 32),
-
-                Center(
-                  child: InkWell(
-                    onTap: _isSubmitting ? null : _pickIcon,
-                    borderRadius: BorderRadius.circular(999),
-                    child: CircleAvatar(
-                      radius: 48,
-                      backgroundImage: _iconBytes == null
-                          ? null
-                          : MemoryImage(_iconBytes!),
-                      child: _iconBytes == null
-                          ? const Icon(Icons.person, size: 40)
-                          : null,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Center(
-                  child: OutlinedButton(
-                    onPressed: _isSubmitting ? null : _pickIcon,
-                    child: const Text('アイコンを選択'),
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                const Text(
-                  '表示名',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: _displayNameCtrl,
-                  enabled: !_isSubmitting,
-                  decoration: const InputDecoration(
-                    hintText: '例：山田 太郎',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.badge),
-                  ),
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) {
-                      return '表示名は必須です。';
-                    }
-                    if (v.trim().length > 30) {
-                      return '表示名は30文字以内にしてください。';
-                    }
-                    return null;
-                  },
-                  onChanged: (_) => setState(() {}),
-                ),
-
-                const SizedBox(height: 16),
-
-                const Text(
-                  '自己紹介',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: _bioCtrl,
-                  enabled: !_isSubmitting,
-                  maxLines: 5,
-                  decoration: const InputDecoration(
-                    hintText: '例：好きな作品や推しポイントを書いてください',
-                    border: OutlineInputBorder(),
-                    alignLabelWithHint: true,
-                  ),
-                  validator: (v) {
-                    if (v != null && v.trim().length > 200) {
-                      return '自己紹介は200文字以内にしてください。';
-                    }
-                    return null;
-                  },
-                  onChanged: (_) => setState(() {}),
-                ),
-
-                const SizedBox(height: 24),
-
-                if (blockingReason != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Text(
-                      blockingReason,
-                      textAlign: TextAlign.right,
+        child: Stack(
+          children: [
+            SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+              child: Form(
+                key: _formKey,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 24),
+                    const Text(
+                      'プロフィールを作成',
                       style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'アイコンと自己紹介を設定しましょう',
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 32),
+
+                    Center(
+                      child: InkWell(
+                        onTap: _isSubmitting ? null : _pickIcon,
+                        borderRadius: BorderRadius.circular(999),
+                        child: CircleAvatar(
+                          radius: 48,
+                          backgroundImage: _iconBytes == null
+                              ? null
+                              : MemoryImage(_iconBytes!),
+                          child: _iconBytes == null
+                              ? const Icon(Icons.person, size: 40)
+                              : null,
+                        ),
                       ),
                     ),
-                  ),
+                    const SizedBox(height: 12),
+                    Center(
+                      child: OutlinedButton(
+                        onPressed: _isSubmitting ? null : _pickIcon,
+                        child: const Text('アイコンを選択'),
+                      ),
+                    ),
 
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: FilledButton(
+                    const SizedBox(height: 24),
+
+                    const Text(
+                      '表示名',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _displayNameCtrl,
+                      enabled: !_isSubmitting,
+                      decoration: const InputDecoration(
+                        hintText: '例：山田 太郎',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.badge),
+                      ),
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty) {
+                          return '表示名は必須です。';
+                        }
+                        if (v.trim().length > 30) {
+                          return '表示名は30文字以内にしてください。';
+                        }
+                        return null;
+                      },
+                      onChanged: (_) => setState(() {}),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    const Text(
+                      '自己紹介',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _bioCtrl,
+                      enabled: !_isSubmitting,
+                      maxLines: 5,
+                      decoration: const InputDecoration(
+                        hintText: '例：好きな作品や推しポイントを書いてください',
+                        border: OutlineInputBorder(),
+                        alignLabelWithHint: true,
+                      ),
+                      validator: (v) {
+                        if (v != null && v.trim().length > 200) {
+                          return '自己紹介は200文字以内にしてください。';
+                        }
+                        return null;
+                      },
+                      onChanged: (_) => setState(() {}),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    if (blockingReason != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Text(
+                          blockingReason,
+                          textAlign: TextAlign.right,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: 16,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: _isSubmitting
+                        ? null
+                        : () {
+                            Navigator.of(context).maybePop();
+                          },
+                    icon: const Icon(Icons.arrow_back),
+                    label: const Text('戻る'),
+                  ),
+                  FilledButton(
                     onPressed: _isSubmitting
                         ? null
                         : (_canProceed() ? _next : null),
@@ -246,10 +277,10 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                           )
                         : const Text('次へ'),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
