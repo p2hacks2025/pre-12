@@ -105,7 +105,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('ホーム画面への遷移に失敗: $e')));
+      ).showSnackBar(SnackBar(content: Text('登録処理に失敗しました: $e')));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
