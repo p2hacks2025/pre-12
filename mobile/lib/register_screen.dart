@@ -27,11 +27,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   bool _canProceed() {
-    return RegisterValidation.canProceed(
-      username: _usernameCtrl.text,
-      email: _emailCtrl.text,
-      password: _passwordCtrl.text,
-    );
+    return _blockingReason() == null;
   }
 
   String? _blockingReason() {

@@ -39,13 +39,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   }
 
   bool _canProceed() {
-    final displayName = _displayNameCtrl.text.trim();
-    if (displayName.isEmpty) return false;
-    if (displayName.length > 30) return false;
-
-    final bio = _bioCtrl.text.trim();
-    if (bio.length > 200) return false;
-    return true;
+    return _blockingReason() == null;
   }
 
   String? _blockingReason() {
