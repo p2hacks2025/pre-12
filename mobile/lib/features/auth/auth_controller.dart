@@ -62,4 +62,12 @@ class AuthController extends StateNotifier<AuthState> {
   void logout() {
     state = AuthState.signedOut();
   }
+
+  void updateDisplayName(String displayName) {
+    final user = state.user;
+    if (user == null) return;
+    state = state.copyWith(
+      user: DummyUser(id: user.id, displayName: displayName),
+    );
+  }
 }
