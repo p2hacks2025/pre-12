@@ -2,7 +2,7 @@ package handler
 
 import (
 	"context"
-	"fmt"
+	"math/rand"
 	"net/http"
 	"time"
 
@@ -23,7 +23,7 @@ type WorkResponse struct {
 	CreatedAt   string `json:"created_at"`
 }
 
-// GetWorks はホーム画面用に作品一覧を返す
+// GetWorks はホーム画面用に未スワイプ作品をランダムに返す（高速版）
 func GetWorks(c *gin.Context) {
 	userID := c.Query("user_id")
 	if userID == "" {
@@ -33,19 +33,53 @@ func GetWorks(c *gin.Context) {
 
 	ctx := context.Background()
 
-	// パフォーマンス改善: LEFT JOIN で未スワイプ作品を取得
-	rows, err := db.Pool.Query(ctx, `
+	// 1. 未スワイプ作品IDを取得
+	idRows, err := db.Pool.Query(ctx, `
+		SELECT w.id
+		FROM public.works w
+		LEFT JOIN public.swipes s ON s.from_user_id = $1 AND s.to_work_id = w.id
+		WHERE w.user_id <> $1
+		  AND s.id IS NULL
+	`, userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	defer idRows.Close()
+
+	var workIDs []string
+	for idRows.Next() {
+		var id string
+		if err := idRows.Scan(&id); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		workIDs = append(workIDs, id)
+	}
+
+	if len(workIDs) == 0 {
+		// 未スワイプ作品がない場合
+		c.JSON(http.StatusOK, []WorkResponse{})
+		return
+	}
+
+	// 2. Goでランダムに10件選択
+	rand.Seed(time.Now().UnixNano())
+	rand.Shuffle(len(workIDs), func(i, j int) { workIDs[i], workIDs[j] = workIDs[j], workIDs[i] })
+
+	selectedIDs := workIDs
+	if len(workIDs) > 10 {
+		selectedIDs = workIDs[:10]
+	}
+
+	// 3. 選ばれたIDで作品情報をまとめて取得
+	query := `
 		SELECT w.id, w.user_id, u.username, u.icon_path, w.image_path, w.title, w.description, w.created_at
 		FROM public.works w
 		JOIN public.users u ON u.id = w.user_id
-		LEFT JOIN public.swipes s ON s.from_user_id = $1 AND s.to_work_id = w.id
-		LEFT JOIN public.user_progress up ON up.user_id = $1
-		WHERE w.user_id <> $1
-		  AND s.id IS NULL                     -- 未スワイプ
-		  AND (up.last_viewed IS NULL OR w.created_at > up.last_viewed)
-		ORDER BY w.created_at DESC
-		LIMIT 10
-	`, userID)
+		WHERE w.id = ANY($1)
+	`
+	rows, err := db.Pool.Query(ctx, query, selectedIDs)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -53,8 +87,6 @@ func GetWorks(c *gin.Context) {
 	defer rows.Close()
 
 	var works []WorkResponse
-	var newestCreatedAt time.Time
-
 	for rows.Next() {
 		var w WorkResponse
 		var iconPath, imagePath string
@@ -64,29 +96,12 @@ func GetWorks(c *gin.Context) {
 			return
 		}
 
-		// path → URL に変換
+		// パスをURLに変換
 		w.IconURL = lib.BuildPublicURL(iconPath)
 		w.ImageURL = lib.BuildPublicURL(imagePath)
 		w.CreatedAt = createdAt.Format(time.RFC3339)
 
 		works = append(works, w)
-
-		if newestCreatedAt.IsZero() || createdAt.After(newestCreatedAt) {
-			newestCreatedAt = createdAt
-		}
-	}
-
-	// user_progress を更新（失敗しても作品は返す）
-	if !newestCreatedAt.IsZero() {
-		_, err := db.Pool.Exec(ctx, `
-			INSERT INTO public.user_progress (user_id, last_viewed)
-			VALUES ($1, $2)
-			ON CONFLICT (user_id) DO UPDATE
-			SET last_viewed = EXCLUDED.last_viewed
-		`, userID, newestCreatedAt)
-		if err != nil {
-			fmt.Println("failed to update user_progress:", err)
-		}
 	}
 
 	c.JSON(http.StatusOK, works)
