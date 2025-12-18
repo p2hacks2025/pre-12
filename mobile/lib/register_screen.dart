@@ -99,6 +99,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: _usernameCtrl,
                   decoration: const InputDecoration(
                     hintText: '例：yamada_taro',
+                    helperText: '使用できる文字: 英小文字・数字・_(アンダースコア)',
                     border: OutlineInputBorder(),
                     prefixIcon: Icon(Icons.person),
                   ),

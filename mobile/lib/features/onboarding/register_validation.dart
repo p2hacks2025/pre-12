@@ -1,4 +1,5 @@
 class RegisterValidation {
+  // 仕様: username は英小文字・数字・_（アンダースコア）のみ許可する。
   static final RegExp usernameRe = RegExp(r'^[a-z0-9_]+$');
   static final RegExp emailRe = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
   static final RegExp hasLetterRe = RegExp(r'[A-Za-z]');
