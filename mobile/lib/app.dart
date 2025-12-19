@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'features/auth/auth_controller.dart';
-import 'features/auth/dummy_login_page.dart';
+import 'features/auth/login_page.dart';
 import 'features/home/home_page.dart';
 import 'features/onboarding/first_launch.dart';
 import 'register_screen.dart';
@@ -26,7 +26,7 @@ class App extends ConsumerWidget {
                 if (isFirstLaunch) {
                   return const RegisterScreen();
                 }
-                return const DummyLoginPage();
+                return const LoginPage();
               },
               loading: () => const Scaffold(
                 body: Center(child: CircularProgressIndicator()),

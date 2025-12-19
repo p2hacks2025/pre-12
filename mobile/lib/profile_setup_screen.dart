@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'features/auth/auth_controller.dart';
-import 'features/auth/models.dart';
 import 'features/home/home_page.dart';
 import 'features/onboarding/first_launch.dart';
 
@@ -86,9 +85,11 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
       ref.invalidate(firstLaunchProvider);
 
       final displayName = _displayNameCtrl.text.trim();
-      await ref
-          .read(authControllerProvider.notifier)
-          .login(DummyUser(id: widget.username, displayName: displayName));
+      ref.read(authControllerProvider.notifier).setLocalUser(
+            id: widget.username,
+            email: widget.email,
+            displayName: displayName,
+          );
 
       if (!mounted) return;
       Navigator.of(context).pushAndRemoveUntil(
@@ -230,7 +231,6 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                         padding: const EdgeInsets.only(bottom: 8),
                         child: Text(
                           blockingReason,
-                          textAlign: TextAlign.right,
                           style: TextStyle(
                             color: Theme.of(context).colorScheme.error,
                           ),
