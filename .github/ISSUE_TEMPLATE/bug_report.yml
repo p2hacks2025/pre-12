@@ -4,12 +4,12 @@ title: "[Bug]: "
 labels: ["bug"]
 body:
 
-* type: markdown
+- type: markdown
   attributes:
   value: |
   できるだけ再現手順を具体的に書いてください。スクショやログがあると助かります。
 
-* type: textarea
+- type: textarea
   id: summary
   attributes:
   label: 概要
@@ -18,7 +18,7 @@ body:
   validations:
   required: true
 
-* type: textarea
+- type: textarea
   id: background
   attributes:
   label: 背景 / 問題点
@@ -30,7 +30,7 @@ body:
   validations:
   required: false
 
-* type: textarea
+- type: textarea
   id: steps
   attributes:
   label: 再現手順
@@ -42,7 +42,7 @@ body:
   validations:
   required: true
 
-* type: textarea
+- type: textarea
   id: expected
   attributes:
   label: 期待する挙動
@@ -50,7 +50,7 @@ body:
   validations:
   required: true
 
-* type: textarea
+- type: textarea
   id: actual
   attributes:
   label: 実際の挙動
@@ -58,7 +58,7 @@ body:
   validations:
   required: true
 
-* type: dropdown
+- type: dropdown
   id: scope
   attributes:
   label: 影響範囲
@@ -73,7 +73,7 @@ body:
   validations:
   required: false
 
-* type: textarea
+- type: textarea
   id: env
   attributes:
   label: 環境
@@ -86,7 +86,7 @@ body:
   validations:
   required: false
 
-* type: textarea
+- type: textarea
   id: evidence
   attributes:
   label: ログ / スクリーンショット
@@ -94,7 +94,7 @@ body:
   validations:
   required: false
 
-* type: checkboxes
+- type: checkboxes
   id: checklist
   attributes:
   label: 確認ポイント
@@ -102,3 +102,4 @@ body:
   - label: 再現手順を第三者が追える形で書いた
   - label: 期待する挙動と実際の挙動を書いた
   - label: 可能ならログ/スクショを添付した
+
