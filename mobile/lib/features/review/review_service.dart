@@ -120,10 +120,41 @@ class ReviewService {
       return;
     }
 
+    if (backendBaseUrl.trim().isEmpty) {
+      ref.read(acceptedReviewsProvider.notifier).state = AsyncValue.error(
+        Exception('BACKEND_BASE_URL が未設定です'),
+        StackTrace.current,
+      );
+      return;
+    }
+
+    final user = ref.read(authControllerProvider).user;
+    if (user == null) {
+      ref.read(acceptedReviewsProvider.notifier).state = AsyncValue.error(
+        Exception('未ログインのためレビューを取得できません'),
+        StackTrace.current,
+      );
+      return;
+    }
+
+    final Uri base;
     try {
-      // TODO: 実際のAPIエンドポイントに置き換える
+      base = Uri.parse(backendBaseUrl);
+    } catch (_) {
+      ref.read(acceptedReviewsProvider.notifier).state = AsyncValue.error(
+        Exception('BACKEND_BASE_URL が不正です: $backendBaseUrl'),
+        StackTrace.current,
+      );
+      return;
+    }
+
+    final uri = base
+        .resolve('/reviews')
+        .replace(queryParameters: <String, String>{'user_id': user.id});
+
+    try {
       final response = await http.get(
-        Uri.parse('http://localhost:8080/api/reviews/accepted'),
+        uri,
         headers: {
           'Content-Type': 'application/json',
           // TODO: 認証トークンを追加

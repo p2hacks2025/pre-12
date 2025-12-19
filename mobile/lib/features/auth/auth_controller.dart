@@ -11,7 +11,7 @@ class AuthState {
     required this.error,
   });
 
-  final DummyUser? user;
+  final AuthUser? user;
   final bool isLoading;
   final String? error;
 
@@ -19,7 +19,7 @@ class AuthState {
       const AuthState(user: null, isLoading: false, error: null);
 
   AuthState copyWith({
-    DummyUser? user,
+    AuthUser? user,
     bool? isLoading,
     String? error,
     bool clearError = false,
@@ -32,8 +32,8 @@ class AuthState {
   }
 }
 
-final authServiceProvider = Provider<DummyAuthService>((ref) {
-  return const DummyAuthService();
+final authServiceProvider = Provider<AuthService>((ref) {
+  return const AuthService();
 });
 
 final authControllerProvider = StateNotifierProvider<AuthController, AuthState>(
@@ -45,44 +45,27 @@ final authControllerProvider = StateNotifierProvider<AuthController, AuthState>(
 class AuthController extends StateNotifier<AuthState> {
   AuthController(this._auth) : super(AuthState.signedOut());
 
-  final DummyAuthService _auth;
+  final AuthService _auth;
 
-  Future<void> login(DummyUser user) async {
+  Future<void> login({required String email, required String password}) async {
     if (state.isLoading) return;
 
     state = state.copyWith(isLoading: true, clearError: true);
     try {
-      final result = await _auth.login(user);
+      final result = await _auth.login(email: email, password: password);
       state = AuthState(user: result.user, isLoading: false, error: null);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
-  Future<void> loginWithEmailPassword({
+  void setLocalUser({
+    required String id,
     required String email,
-    required String password,
-  }) async {
-    if (state.isLoading) return;
-
-    state = state.copyWith(isLoading: true, clearError: true);
-    try {
-      final result = await _auth.loginWithEmailPassword(
-        LoginRequest(email: email, password: password),
-      );
-      state = AuthState(
-        user: DummyUser(id: result.userId, displayName: ''),
-        isLoading: false,
-        error: null,
-      );
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
-    }
-  }
-
-  void completeSignUp({required String userId, required String displayName}) {
+    required String displayName,
+  }) {
     state = AuthState(
-      user: DummyUser(id: userId, displayName: displayName),
+      user: AuthUser(id: id, email: email, displayName: displayName),
       isLoading: false,
       error: null,
     );
@@ -96,7 +79,7 @@ class AuthController extends StateNotifier<AuthState> {
     final user = state.user;
     if (user == null) return;
     state = state.copyWith(
-      user: DummyUser(id: user.id, displayName: displayName),
+      user: AuthUser(id: user.id, email: user.email, displayName: displayName),
     );
   }
 }

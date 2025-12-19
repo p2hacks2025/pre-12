@@ -60,15 +60,6 @@ class WorkCard extends StatelessWidget {
               ],
             ),
           ),
-          Positioned(
-            right: 12,
-            top: 12,
-            child: IconButton.filledTonal(
-              onPressed: onLike,
-              icon: const Icon(Icons.favorite),
-              tooltip: 'いいね',
-            ),
-          ),
         ],
       ),
     );

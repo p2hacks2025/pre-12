@@ -20,6 +20,8 @@ class _UploadArtworkPageState extends ConsumerState<UploadArtworkPage> {
   // ---- 設定（ここだけ変えればOK） ----
   static const int maxFileBytes = 10 * 1024 * 1024; // 10MB
   static const Set<String> allowedExt = {'jpg', 'jpeg', 'png'};
+  // バックエンドの作品作成API（multipart/form-data）
+  static const String uploadPath = '/work';
   // ----------------------------------
 
   final _formKey = GlobalKey<FormState>();
@@ -148,7 +150,7 @@ class _UploadArtworkPageState extends ConsumerState<UploadArtworkPage> {
         http.MultipartFile.fromBytes(
           'image',
           bytes,
-          filename: _fileName ?? 'upload',
+          filename: _fileName ?? 'upload.png',
         ),
       );
 
