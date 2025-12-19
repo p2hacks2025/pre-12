@@ -88,7 +88,11 @@ class ProfileController extends StateNotifier<ProfileState> {
         myWorks: const <MyWork>[],
       );
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(
+        isLoading: false,
+        isLoadingWorks: false,
+        error: e.toString(),
+      );
     }
   }
 
