@@ -93,4 +93,40 @@ class ProfileService {
       if (_client == null) client.close();
     }
   }
+
+  Future<List<MyWork>> getMyWorks({required String userId}) async {
+    if (backendBaseUrl.trim().isEmpty) return const <MyWork>[];
+
+    final Uri base;
+    try {
+      base = Uri.parse(backendBaseUrl);
+    } catch (_) {
+      throw Exception('BACKEND_BASE_URL が不正です: $backendBaseUrl');
+    }
+
+    final uri = base
+        .resolve('/my-works')
+        .replace(queryParameters: <String, String>{'user_id': userId});
+
+    final client = _client ?? http.Client();
+    try {
+      final res = await client.get(uri).timeout(const Duration(seconds: 8));
+      if (res.statusCode < 200 || res.statusCode >= 300) {
+        throw Exception('作品一覧取得に失敗: ${res.statusCode} ${res.body}');
+      }
+
+      final decoded = jsonDecode(res.body);
+      if (decoded is! List) {
+        throw Exception('作品一覧取得の応答が不正です');
+      }
+
+      return decoded
+          .whereType<Map<String, dynamic>>()
+          .map(MyWork.fromJson)
+          .where((w) => w.id.isNotEmpty)
+          .toList(growable: false);
+    } finally {
+      if (_client == null) client.close();
+    }
+  }
 }
