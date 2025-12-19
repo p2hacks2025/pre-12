@@ -1,22 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'features/onboarding/register_validation.dart';
+import 'features/auth/auth_controller.dart';
+import 'features/auth/models.dart';
 import 'profile_setup_screen.dart';
 
-class RegisterScreen extends StatefulWidget {
+class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _usernameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
 
   bool _showPassword = false;
+  bool _isSubmitting = false;
 
   @override
   void dispose() {
@@ -42,14 +46,42 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!_formKey.currentState!.validate()) return;
     if (!_canProceed()) return;
 
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => ProfileSetupScreen(
-          username: _usernameCtrl.text.trim(),
-          email: _emailCtrl.text.trim(),
+    _signUp();
+  }
+
+  Future<void> _signUp() async {
+    if (_isSubmitting) return;
+    setState(() => _isSubmitting = true);
+
+    try {
+      final result = await ref
+          .read(authServiceProvider)
+          .signUp(
+            SignUpRequest(
+              username: _usernameCtrl.text.trim(),
+              email: _emailCtrl.text.trim(),
+              password: _passwordCtrl.text,
+            ),
+          );
+
+      if (!mounted) return;
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => ProfileSetupScreen(
+            userId: result.userId,
+            username: _usernameCtrl.text.trim(),
+            email: _emailCtrl.text.trim(),
+          ),
         ),
-      ),
-    );
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('新規登録に失敗しました: $e')));
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
   }
 
   @override
@@ -100,6 +132,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _usernameCtrl,
+                  enabled: !_isSubmitting,
                   decoration: const InputDecoration(
                     hintText: '例：yamada_taro',
                     border: OutlineInputBorder(),
@@ -120,6 +153,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 TextFormField(
                   controller: _emailCtrl,
                   keyboardType: TextInputType.emailAddress,
+                  enabled: !_isSubmitting,
                   decoration: const InputDecoration(
                     hintText: '例：yamada@example.com',
                     border: OutlineInputBorder(),
@@ -145,6 +179,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 TextFormField(
                   controller: _passwordCtrl,
                   obscureText: !_showPassword,
+                  enabled: !_isSubmitting,
                   decoration: InputDecoration(
                     hintText: '8文字以上の英数字を含むパスワード',
                     border: const OutlineInputBorder(),
@@ -178,10 +213,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: FilledButton(
-                    onPressed: _canProceed() ? _next : null,
+                    onPressed: (_canProceed() && !_isSubmitting) ? _next : null,
                     child: const Text('次へ'),
                   ),
                 ),
+
+                if (_isSubmitting)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 12),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
               ],
             ),
           ),

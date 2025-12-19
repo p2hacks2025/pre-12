@@ -113,29 +113,39 @@ class _UploadArtworkPageState extends ConsumerState<UploadArtworkPage> {
 
     try {
       if (backendBaseUrl.trim().isEmpty) {
-        throw Exception('BACKEND_BASE_URL が未設定です');
+        throw Exception('BACKEND_BASE_URL が未指定です');
       }
 
-      final user = ref.read(authControllerProvider).user;
-      if (user == null) {
-        throw Exception('未ログインのため投稿できません');
+      final authUser = ref.read(authControllerProvider).user;
+      if (authUser == null) {
+        throw Exception('ログインしてください');
       }
 
-      final Uri base = Uri.parse(backendBaseUrl);
+      final Uri base;
+      try {
+        base = Uri.parse(backendBaseUrl);
+      } catch (_) {
+        throw Exception('BACKEND_BASE_URL が不正です: $backendBaseUrl');
+      }
+
       final uri = base.resolve(uploadPath);
 
-      final bytes = _fileBytes ??
-          (_filePath != null
-              ? await File(_filePath!).readAsBytes()
-              : Uint8List(0));
-      if (bytes.isEmpty) {
+      Uint8List bytes;
+      if (_fileBytes != null) {
+        bytes = _fileBytes!;
+      } else if (_filePath != null) {
+        bytes = await File(_filePath!).readAsBytes();
+      } else {
         throw Exception('ファイルデータが取得できませんでした');
       }
 
       final req = http.MultipartRequest('POST', uri);
-      req.fields['user_id'] = user.id;
+      req.fields['user_id'] = authUser.id;
       req.fields['title'] = _titleCtrl.text.trim();
-      req.fields['description'] = _descCtrl.text.trim();
+      final desc = _descCtrl.text.trim();
+      if (desc.isNotEmpty) {
+        req.fields['description'] = desc;
+      }
       req.files.add(
         http.MultipartFile.fromBytes(
           'image',
@@ -144,8 +154,16 @@ class _UploadArtworkPageState extends ConsumerState<UploadArtworkPage> {
         ),
       );
 
-      final streamed = await req.send();
-      final res = await http.Response.fromStream(streamed);
+      final client = http.Client();
+      late final http.Response res;
+      try {
+        final streamed = await client
+            .send(req)
+            .timeout(const Duration(seconds: 20));
+        res = await http.Response.fromStream(streamed);
+      } finally {
+        client.close();
+      }
 
       if (!mounted) return;
 
@@ -287,8 +305,9 @@ class _UploadArtworkPageState extends ConsumerState<UploadArtworkPage> {
                   ),
                   maxLines: 4,
                   validator: (v) {
-                    if (v != null && v.length > 500)
+                    if (v != null && v.length > 500) {
                       return '説明文は500文字以内にしてください。';
+                    }
                     return null;
                   },
                 ),
@@ -297,7 +316,9 @@ class _UploadArtworkPageState extends ConsumerState<UploadArtworkPage> {
 
                 // 送信
                 ElevatedButton(
-                  onPressed: _isSubmitting ? null : (_canSubmit() ? _submit : null),
+                  onPressed: _isSubmitting
+                      ? null
+                      : (_canSubmit() ? _submit : null),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _canSubmit() && !_isSubmitting
                         ? Colors.blue
@@ -311,7 +332,10 @@ class _UploadArtworkPageState extends ConsumerState<UploadArtworkPage> {
                       ? const SizedBox(
                           height: 18,
                           width: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
                         )
                       : Text(
                           _canSubmit() ? 'バックエンドへ送信' : '入力内容を確認してください',

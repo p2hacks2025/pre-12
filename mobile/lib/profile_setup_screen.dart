@@ -11,10 +11,12 @@ import 'features/onboarding/first_launch.dart';
 class ProfileSetupScreen extends ConsumerStatefulWidget {
   const ProfileSetupScreen({
     super.key,
+    required this.userId,
     required this.username,
     required this.email,
   });
 
+  final String userId;
   final String username;
   final String email;
 
@@ -85,8 +87,10 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
       ref.invalidate(firstLaunchProvider);
 
       final displayName = _displayNameCtrl.text.trim();
-      ref.read(authControllerProvider.notifier).setLocalUser(
-            id: widget.username,
+      ref
+          .read(authControllerProvider.notifier)
+          .setLocalUser(
+            id: widget.userId,
             email: widget.email,
             displayName: displayName,
           );

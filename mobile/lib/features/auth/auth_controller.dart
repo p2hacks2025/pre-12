@@ -47,10 +47,7 @@ class AuthController extends StateNotifier<AuthState> {
 
   final AuthService _auth;
 
-  Future<void> login({
-    required String email,
-    required String password,
-  }) async {
+  Future<void> login({required String email, required String password}) async {
     if (state.isLoading) return;
 
     state = state.copyWith(isLoading: true, clearError: true);
@@ -82,11 +79,7 @@ class AuthController extends StateNotifier<AuthState> {
     final user = state.user;
     if (user == null) return;
     state = state.copyWith(
-      user: AuthUser(
-        id: user.id,
-        email: user.email,
-        displayName: displayName,
-      ),
+      user: AuthUser(id: user.id, email: user.email, displayName: displayName),
     );
   }
 }
