@@ -89,6 +89,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final blockingReason = _blockingReason();
 
     return Scaffold(
+      appBar: AppBar(automaticallyImplyLeading: true),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
