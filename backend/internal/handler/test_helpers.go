@@ -4,6 +4,7 @@ package handler
 import (
 	"context"
 	"fmt"
+	"testing"
 	"time"
 
 	"github.com/p2hacks2025/pre-12/backend/internal/db"
@@ -50,6 +51,10 @@ func createTestUser(t CleanupT) string {
 }
 
 func createTestWork(t CleanupT, userID string) string {
+	// image_path をユニークにする
+	imagePath := fmt.Sprintf("/dummy/test_%d.png", time.Now().UnixNano())
+	title := fmt.Sprintf("test work %d", time.Now().UnixNano()) // タイトルも必要ならユニーク化
+
 	var workID string
 	err := db.Pool.QueryRow(
 		context.Background(),
@@ -59,8 +64,8 @@ func createTestWork(t CleanupT, userID string) string {
 		RETURNING id
 		`,
 		userID,
-		"test work",
-		"/dummy/test.png",
+		title,
+		imagePath,
 	).Scan(&workID)
 
 	if err != nil {
@@ -76,4 +81,28 @@ func createTestWork(t CleanupT, userID string) string {
 	})
 
 	return workID
+}
+
+// createTestSwipe はスワイプ済みレコードを作成
+func createTestSwipe(t testing.TB, fromUserID, toWorkID, toWorkUserID string, isLike bool) string {
+	var swipeID string
+	err := db.Pool.QueryRow(
+		context.Background(),
+		`
+        INSERT INTO public.swipes (from_user_id, to_work_id, to_work_user_id, is_like)
+        VALUES ($1, $2, $3, $4)
+        RETURNING id
+        `,
+		fromUserID, toWorkID, toWorkUserID, isLike,
+	).Scan(&swipeID)
+
+	if err != nil {
+		t.Fatalf("failed to create swipe: %v", err)
+	}
+
+	t.Cleanup(func() {
+		_, _ = db.Pool.Exec(context.Background(), "DELETE FROM public.swipes WHERE id=$1", swipeID)
+	})
+
+	return swipeID
 }

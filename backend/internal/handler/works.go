@@ -35,12 +35,13 @@ func GetWorks(c *gin.Context) {
 
 	// 1. 未スワイプ作品IDを取得
 	idRows, err := db.Pool.Query(ctx, `
-		SELECT w.id
-		FROM public.works w
-		LEFT JOIN public.swipes s ON s.from_user_id = $1 AND s.to_work_id = w.id
-		WHERE w.user_id <> $1
-		  AND s.id IS NULL
-	`, userID)
+        SELECT w.id
+        FROM public.works w
+        LEFT JOIN public.swipes s
+            ON s.from_user_id = $1 AND s.to_work_id = w.id
+        WHERE w.user_id <> $1
+            AND s.id IS NULL
+    `, userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -89,15 +90,22 @@ func GetWorks(c *gin.Context) {
 	var works []WorkResponse
 	for rows.Next() {
 		var w WorkResponse
-		var iconPath, imagePath *string
+		var iconPath, imagePath, description *string
 		var createdAt time.Time
-		if err := rows.Scan(&w.ID, &w.UserID, &w.Username, &iconPath, &imagePath, &w.Title, &w.Description, &createdAt); err != nil {
+		if err := rows.Scan(&w.ID, &w.UserID, &w.Username, &iconPath, &imagePath, &w.Title, &description, &createdAt); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
 		const DefaultIconPath = "icons/default.png"
 		const DefaultImagePath = "images/default.png"
+
+		// description はNULLなら空文字にする
+		if description != nil {
+			w.Description = *description
+		} else {
+			w.Description = ""
+		}
 
 		// icon_url（必ず返す）
 		if iconPath != nil {
