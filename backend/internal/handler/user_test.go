@@ -5,30 +5,19 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
-	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	"github.com/p2hacks2025/pre-12/backend/internal/db"
 )
 
 func TestGetMyProfileSuccess(t *testing.T) {
-	gin.SetMode(gin.TestMode)
+	// 必要なエンドポイントだけを持つルーター
+	r := setupTestRouter(withSignup, withMe)
 
-	if err := godotenv.Load("../../.env"); err != nil {
-		log.Println(".env not found, relying on environment variables")
-	}
-
-	db.Init()
-
-	r := gin.Default()
-	r.POST("/sign-up", Signup)
-	r.GET("/me", GetMyProfile)
-
+	// --- ユーザー作成 ---
 	body := SignupRequest{
 		Username: "profile_test",
 		Email:    fmt.Sprintf("profile_test_%d@example.com", time.Now().UnixNano()),
@@ -64,6 +53,7 @@ func TestGetMyProfileSuccess(t *testing.T) {
 		)
 	})
 
+	// --- プロフィール取得 ---
 	req := httptest.NewRequest(
 		http.MethodGet,
 		"/me?user_id="+resp.UserID,

@@ -22,14 +22,14 @@ void main() {
     expect(find.text('アカウントを作成'), findsOneWidget);
   });
 
-  testWidgets('2回目以降はダミーログインが表示される', (WidgetTester tester) async {
+  testWidgets('2回目以降はログイン画面が表示される', (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({'has_launched_v1': true});
 
     await tester.pumpWidget(const ProviderScope(child: App()));
     await tester.pumpAndSettle();
 
-    expect(find.text('ダミーログイン'), findsOneWidget);
-    expect(find.text('田中 太郎'), findsOneWidget);
-    expect(find.text('鈴木 花子'), findsOneWidget);
+    expect(find.text('ログイン'), findsWidgets);
+    expect(find.text('メールアドレス'), findsOneWidget);
+    expect(find.text('パスワード'), findsOneWidget);
   });
 }

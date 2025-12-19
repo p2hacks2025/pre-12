@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'features/onboarding/register_validation.dart';
-import 'profile_setup_screen.dart';
+import '../onboarding/register_validation.dart';
+import 'auth_controller.dart';
 
-class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+class LoginPage extends ConsumerStatefulWidget {
+  const LoginPage({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _LoginPageState extends ConsumerState<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final _usernameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
 
@@ -20,46 +20,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   void dispose() {
-    _usernameCtrl.dispose();
     _emailCtrl.dispose();
     _passwordCtrl.dispose();
     super.dispose();
   }
 
-  bool _canProceed() {
-    return _blockingReason() == null;
-  }
+  Future<void> _submit() async {
+    final valid = _formKey.currentState?.validate() ?? false;
+    if (!valid) return;
 
-  String? _blockingReason() {
-    return RegisterValidation.blockingReason(
-      username: _usernameCtrl.text,
-      email: _emailCtrl.text,
-      password: _passwordCtrl.text,
-    );
-  }
+    final email = _emailCtrl.text.trim();
+    final password = _passwordCtrl.text;
 
-  void _next() {
-    if (!_formKey.currentState!.validate()) return;
-    if (!_canProceed()) return;
-
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => ProfileSetupScreen(
-          username: _usernameCtrl.text.trim(),
-          email: _emailCtrl.text.trim(),
-        ),
-      ),
-    );
+    await ref
+        .read(authControllerProvider.notifier)
+        .login(email: email, password: password);
   }
 
   @override
   Widget build(BuildContext context) {
-    final blockingReason = _blockingReason();
+    final state = ref.watch(authControllerProvider);
 
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: const Text('新規登録'),
+        title: const Text('ログイン'),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -71,47 +56,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 24),
-
-                // タイトル
                 const Text(
-                  'アカウントを作成',
+                  'ログイン',
                   style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'P2HAC.KSに参加してレビュー・アップロードを始めましょう',
+                  '登録済みのメールアドレスでログインしてください',
                   style: TextStyle(fontSize: 14, color: Colors.grey),
                   textAlign: TextAlign.center,
                 ),
-
                 const SizedBox(height: 32),
-
-                // ユーザーネーム
-                const Text(
-                  'ユーザーネーム',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  '使用できる文字: 英小文字・数字・_(アンダースコア)',
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
-                ),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: _usernameCtrl,
-                  decoration: const InputDecoration(
-                    hintText: '例：yamada_taro',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.person),
-                  ),
-                  validator: RegisterValidation.usernameFieldError,
-                  onChanged: (_) => setState(() {}),
-                ),
-
-                const SizedBox(height: 16),
-
-                // メールアドレス
                 const Text(
                   'メールアドレス',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -126,20 +82,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     prefixIcon: Icon(Icons.email),
                   ),
                   validator: RegisterValidation.emailFieldError,
-                  onChanged: (_) => setState(() {}),
+                  onFieldSubmitted: (_) => _submit(),
                 ),
-
                 const SizedBox(height: 16),
-
-                // パスワード
                 const Text(
                   'パスワード',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  '8文字以上、英字と数字を含めてください',
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
                 ),
                 const SizedBox(height: 8),
                 TextFormField(
@@ -159,27 +107,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                   validator: RegisterValidation.passwordFieldError,
-                  onChanged: (_) => setState(() {}),
+                  onFieldSubmitted: (_) => _submit(),
                 ),
-
                 const SizedBox(height: 24),
-
-                if (blockingReason != null)
+                if (state.error != null)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Text(
-                      blockingReason,
+                      state.error!,
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.error,
                       ),
                     ),
                   ),
-
                 Align(
                   alignment: Alignment.centerRight,
                   child: FilledButton(
-                    onPressed: _canProceed() ? _next : null,
-                    child: const Text('次へ'),
+                    onPressed: state.isLoading ? null : _submit,
+                    child: state.isLoading
+                        ? SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Theme.of(context).colorScheme.onPrimary,
+                            ),
+                          )
+                        : const Text('ログイン'),
                   ),
                 ),
               ],
