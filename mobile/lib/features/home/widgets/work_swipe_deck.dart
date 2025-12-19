@@ -118,7 +118,7 @@ class _DismissibleTopCard extends ConsumerWidget {
         alignment: Alignment.centerRight,
         icon: Icons.close,
         label: 'スキップ',
-        color: const Color(0xFF90A4AE), // Cool Grey/Blue
+        color: const Color(0xFF6A8594), // Dull Blue (Kusumi Blue)
       ),
       child: _CardFrame(
         child: WorkCard(work: work, onLike: () => onSwipe(true)),

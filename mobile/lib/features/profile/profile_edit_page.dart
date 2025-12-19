@@ -142,10 +142,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _usernameCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'ユーザー名',
-                  border: OutlineInputBorder(),
-                ),
+                decoration: const InputDecoration(labelText: 'ユーザー名'),
                 textInputAction: TextInputAction.next,
                 validator: (v) {
                   final t = (v ?? '').trim();
@@ -157,10 +154,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
               const SizedBox(height: 12),
               TextFormField(
                 controller: _bioCtrl,
-                decoration: const InputDecoration(
-                  labelText: '自己紹介',
-                  border: OutlineInputBorder(),
-                ),
+                decoration: const InputDecoration(labelText: '自己紹介'),
                 minLines: 3,
                 maxLines: 6,
                 validator: (v) {

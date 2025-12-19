@@ -78,7 +78,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   keyboardType: TextInputType.emailAddress,
                   decoration: const InputDecoration(
                     hintText: '例：yamada@example.com',
-                    border: OutlineInputBorder(),
                     prefixIcon: Icon(Icons.email),
                   ),
                   validator: RegisterValidation.emailFieldError,
@@ -95,7 +94,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   obscureText: !_showPassword,
                   decoration: InputDecoration(
                     hintText: '8文字以上の英数字を含むパスワード',
-                    border: const OutlineInputBorder(),
                     prefixIcon: const Icon(Icons.lock),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -151,7 +149,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       },
                       child: const Text(
                         '開発用スキップ',
-                        style: TextStyle(color: Colors.grey),
+                        style: TextStyle(color: Color(0xFF6A8594)), // Dull Blue
                       ),
                     ),
                   ),
