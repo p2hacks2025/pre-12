@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
+
+import '../../config.dart';
+import '../auth/auth_controller.dart';
 
 // フロントのみでUIを確認したい場合は true にする
 const bool _useMockAcceptedReviews = true;
@@ -127,10 +131,41 @@ class ReviewService {
       return;
     }
 
+    if (backendBaseUrl.trim().isEmpty) {
+      ref.read(acceptedReviewsProvider.notifier).state = AsyncValue.error(
+        Exception('BACKEND_BASE_URL が未設定です'),
+        StackTrace.current,
+      );
+      return;
+    }
+
+    final user = ref.read(authControllerProvider).user;
+    if (user == null) {
+      ref.read(acceptedReviewsProvider.notifier).state = AsyncValue.error(
+        Exception('未ログインのためレビューを取得できません'),
+        StackTrace.current,
+      );
+      return;
+    }
+
+    final Uri base;
     try {
-      // TODO: 実際のAPIエンドポイントに置き換える
+      base = Uri.parse(backendBaseUrl);
+    } catch (_) {
+      ref.read(acceptedReviewsProvider.notifier).state = AsyncValue.error(
+        Exception('BACKEND_BASE_URL が不正です: $backendBaseUrl'),
+        StackTrace.current,
+      );
+      return;
+    }
+
+    final uri = base
+        .resolve('/reviews')
+        .replace(queryParameters: <String, String>{'user_id': user.id});
+
+    try {
       final response = await http.get(
-        Uri.parse('http://localhost:8080/api/reviews/accepted'),
+        uri,
         headers: {
           'Content-Type': 'application/json',
           // TODO: 認証トークンを追加
@@ -140,9 +175,21 @@ class ReviewService {
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
-        final reviews = data
-            .map((json) => AcceptedReview.fromJson(json))
-            .toList();
+        final reviews = data.whereType<Map<String, dynamic>>().map((json) {
+          return AcceptedReview(
+            id: (json['review_id'] as String?) ?? (json['id'] as String?) ?? '',
+            userId: (json['user_id'] as String?) ?? '',
+            userName: (json['username'] as String?) ??
+                (json['user_name'] as String?) ??
+                'Unknown User',
+            comment: (json['comment'] as String?) ?? '',
+            workId: json['work_id'] as String?,
+            workTitle: json['work_title'] as String?,
+            createdAt:
+                DateTime.parse((json['created_at'] as String?) ?? ''),
+            isAccepted: (json['is_accepted'] as bool?) ?? true,
+          );
+        }).toList();
 
         ref.read(acceptedReviewsProvider.notifier).state = AsyncValue.data(
           reviews,
@@ -169,26 +216,6 @@ class ReviewService {
       return true;
     }
 
-    try {
-      // TODO: 実際のAPIエンドポイントに置き換える
-      final response = await http.post(
-        Uri.parse('http://localhost:8080/api/reviews/$reviewId/accept'),
-        headers: {
-          'Content-Type': 'application/json',
-          // TODO: 認証トークンを追加
-          // 'Authorization': 'Bearer $token',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        // 承認後、リストを再取得
-        await fetchAcceptedReviews();
-        return true;
-      } else {
-        return false;
-      }
-    } catch (e) {
-      return false;
-    }
+    throw UnimplementedError('acceptReview 用のバックエンドAPIが未実装です');
   }
 }
