@@ -58,7 +58,7 @@ func GetMatches(c *gin.Context) {
 
 	for rows.Next() {
 		var m MatchResponse
-		var iconPath, workPath string
+		var iconPath, workPath *string
 		if err := rows.Scan(
 			&m.MatchID,
 			&m.UserID,
@@ -69,8 +69,22 @@ func GetMatches(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		m.IconURL = lib.BuildPublicURL(iconPath)
-		m.WorkImageURL = lib.BuildPublicURL(workPath)
+
+		const DefaultIconPath = "icons/default.png"
+		const DefaultWorkImagePath = "images/default.png"
+
+		if iconPath != nil {
+			m.IconURL = lib.BuildPublicURL(*iconPath)
+		} else {
+			m.IconURL = lib.BuildPublicURL(DefaultIconPath)
+		}
+
+		if workPath != nil {
+			m.WorkImageURL = lib.BuildPublicURL(*workPath)
+		} else {
+			m.WorkImageURL = lib.BuildPublicURL(DefaultWorkImagePath)
+		}
+
 		matches = append(matches, m)
 	}
 

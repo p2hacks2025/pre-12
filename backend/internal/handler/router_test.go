@@ -38,3 +38,7 @@ func withReceivedReviews(r *gin.Engine) {
 func withWorks(r *gin.Engine) {
 	r.GET("/works", GetWorks)
 }
+
+func withMatches(r *gin.Engine) {
+	r.GET("/matches", GetMatches)
+}
