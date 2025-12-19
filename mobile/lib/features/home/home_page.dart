@@ -18,6 +18,12 @@ class HomePage extends ConsumerStatefulWidget {
 class _HomePageState extends ConsumerState<HomePage> {
   int _index = 0;
 
+  Future<void> _handleLogout() async {
+    await ref.read(authControllerProvider.notifier).logout();
+    if (!mounted) return;
+    Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+  }
+
   @override
   Widget build(BuildContext context) {
     final titles = <String>['ホーム', 'レビューする', '投稿', '受信レビュー', 'プロフィール'];
@@ -27,9 +33,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       const ReviewListScreen(),
       const UploadArtworkPage(),
       const ReceivedReviewListPage(),
-      ProfileDisplayPage(
-        onLogout: () => ref.read(authControllerProvider.notifier).logout(),
-      ),
+      ProfileDisplayPage(onLogout: _handleLogout),
     ];
 
     return Scaffold(
@@ -72,26 +76,6 @@ class _HomePageState extends ConsumerState<HomePage> {
             label: 'プロフィール',
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _PlaceholderPage extends StatelessWidget {
-  const _PlaceholderPage({required this.text});
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Text(
-          text,
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
       ),
     );
   }
