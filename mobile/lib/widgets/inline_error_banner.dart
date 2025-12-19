@@ -19,7 +19,11 @@ class InlineErrorBanner extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.error_outline, color: colors.error),
+            Icon(
+              Icons.error_outline,
+              color: colors.error,
+              semanticsLabel: 'エラー',
+            ),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
