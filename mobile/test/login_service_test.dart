@@ -9,7 +9,7 @@ import 'package:p2hacks_onyx/features/auth/models.dart';
 
 void main() {
   test(
-    'DummyAuthService.loginWithEmailPassword posts /login and parses user_id',
+    'AuthService.loginWithEmailPassword posts /login and parses user_id',
     () async {
       late http.Request captured;
 
@@ -22,7 +22,7 @@ void main() {
         );
       });
 
-      final service = DummyAuthService(
+      final service = AuthService(
         client: client,
         baseUrl: 'http://example',
       );
