@@ -110,7 +110,7 @@ class _ReviewCard extends StatelessWidget {
             MaterialPageRoute(
               builder: (context) => AcceptReviewScreen(
                 artworkId: review.workId ?? '',
-                artworkImageUrl: '', // TODO: 作品画像URLをAPIから取得
+                artworkImageUrl: review.workImageUrl,
                 artworkTitle: review.workTitle ?? '作品',
                 reviewerName: review.userName,
                 reviewComment: review.comment,

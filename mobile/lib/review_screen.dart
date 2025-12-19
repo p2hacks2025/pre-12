@@ -1,71 +1,195 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 
-// レビュー対象のデータモデル
-class ReviewTarget {
-  final String id;
-  final String userName;
-  final String artworkTitle;
-  final String? artworkImageUrl;
+import 'package:p2hacks_onyx/config.dart';
+import 'package:p2hacks_onyx/features/auth/auth_controller.dart';
 
-  const ReviewTarget({
-    required this.id,
-    required this.userName,
-    required this.artworkTitle,
-    this.artworkImageUrl,
+class MatchTarget {
+  final String matchId;
+  final String userId;
+  final String username;
+  final String iconUrl;
+  final String workImageUrl;
+
+  const MatchTarget({
+    required this.matchId,
+    required this.userId,
+    required this.username,
+    required this.iconUrl,
+    required this.workImageUrl,
   });
+
+  factory MatchTarget.fromJson(Map<String, dynamic> json) {
+    return MatchTarget(
+      matchId: json['match_id'] as String? ?? '',
+      userId: json['user_id'] as String? ?? '',
+      username: json['username'] as String? ?? '',
+      iconUrl: json['icon_url'] as String? ?? '',
+      workImageUrl: json['work_image_url'] as String? ?? '',
+    );
+  }
 }
 
-class ReviewListScreen extends StatelessWidget {
+class ReviewListScreen extends ConsumerStatefulWidget {
   const ReviewListScreen({super.key});
 
-  // ダミーデータ（実際にはAPIから取得）
-  List<ReviewTarget> _getReviewTargets() {
-    return [
-      const ReviewTarget(id: '1', userName: '山田太郎', artworkTitle: '夕暮れの風景'),
-      const ReviewTarget(id: '2', userName: '佐藤花子', artworkTitle: '抽象的な表現'),
-      const ReviewTarget(id: '3', userName: '田中一郎', artworkTitle: '都会の夜'),
-      const ReviewTarget(id: '4', userName: '鈴木美咲', artworkTitle: '自然の美しさ'),
-      const ReviewTarget(id: '5', userName: '高橋健太', artworkTitle: 'ポートレート'),
-    ];
+  @override
+  ConsumerState<ReviewListScreen> createState() => _ReviewListScreenState();
+}
+
+class _ReviewListScreenState extends ConsumerState<ReviewListScreen> {
+  bool _isLoading = false;
+  String? _error;
+  List<MatchTarget> _targets = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(_fetchMatches);
+  }
+
+  Future<void> _fetchMatches() async {
+    if (_isLoading) return;
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    if (backendBaseUrl.trim().isEmpty) {
+      setState(() {
+        _isLoading = false;
+        _error = 'BACKEND_BASE_URL が未設定です';
+      });
+      return;
+    }
+
+    final user = ref.read(authControllerProvider).user;
+    if (user == null) {
+      setState(() {
+        _isLoading = false;
+        _error = '未ログインのためレビュー対象を取得できません';
+      });
+      return;
+    }
+
+    final Uri base;
+    try {
+      base = Uri.parse(backendBaseUrl);
+    } catch (_) {
+      setState(() {
+        _isLoading = false;
+        _error = 'BACKEND_BASE_URL が不正です: $backendBaseUrl';
+      });
+      return;
+    }
+
+    final uri =
+        base.resolve('/matches').replace(queryParameters: {'user_id': user.id});
+
+    try {
+      final res = await http.get(uri).timeout(const Duration(seconds: 8));
+
+      if (res.statusCode < 200 || res.statusCode >= 300) {
+        throw Exception('Failed to load matches: ${res.statusCode}');
+      }
+
+      final decoded = jsonDecode(res.body);
+      if (decoded is! List) {
+        throw Exception('Invalid matches response');
+      }
+
+      final targets = decoded
+          .whereType<Map<String, dynamic>>()
+          .map(MatchTarget.fromJson)
+          .where((t) => t.matchId.isNotEmpty)
+          .toList(growable: false);
+
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _targets = targets;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _error = e.toString();
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final reviewTargets = _getReviewTargets();
+    if (_isLoading && _targets.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
-    return Scaffold(
-      // appBar: AppBar(
-      //   title: const Text('レビュー待ちリスト'),
-      //   elevation: 0,
-      // ),
-      body: reviewTargets.isEmpty
-          ? const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.inbox_outlined, size: 64, color: Colors.grey),
-                  SizedBox(height: 16),
-                  Text(
-                    'レビュー待ちの作品はありません',
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
-                  ),
-                ],
+    if (_error != null && _targets.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.error_outline, size: 48, color: Colors.red),
+              const SizedBox(height: 12),
+              Text(
+                _error!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 14),
               ),
-            )
-          : ListView.builder(
-              itemCount: reviewTargets.length,
-              padding: const EdgeInsets.all(16),
-              itemBuilder: (context, index) {
-                final target = reviewTargets[index];
-                return _ReviewTargetCard(target: target);
-              },
+              const SizedBox(height: 12),
+              ElevatedButton(
+                onPressed: _fetchMatches,
+                child: const Text('再試行'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_targets.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.inbox_outlined, size: 64, color: Colors.grey),
+            const SizedBox(height: 16),
+            const Text(
+              'レビュー待ちの相手がいません',
+              style: TextStyle(fontSize: 16, color: Colors.grey),
             ),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: _fetchMatches,
+              icon: const Icon(Icons.refresh),
+              label: const Text('更新'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: _fetchMatches,
+      child: ListView.builder(
+        itemCount: _targets.length,
+        padding: const EdgeInsets.all(16),
+        itemBuilder: (context, index) {
+          final target = _targets[index];
+          return _ReviewTargetCard(target: target);
+        },
+      ),
     );
   }
 }
 
 class _ReviewTargetCard extends StatelessWidget {
-  final ReviewTarget target;
+  final MatchTarget target;
 
   const _ReviewTargetCard({required this.target});
 
@@ -77,15 +201,14 @@ class _ReviewTargetCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () {
-          // レビュー画面への遷移
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => ReviewExecutionScreen(
-                artworkId: target.id,
-                artworkImageUrl: target.artworkImageUrl ?? '',
-                artworkTitle: target.artworkTitle,
-                artistName: target.userName,
+                matchId: target.matchId,
+                artworkImageUrl: target.workImageUrl,
+                artworkTitle: '作品',
+                artistName: target.username,
               ),
             ),
           );
@@ -93,75 +216,50 @@ class _ReviewTargetCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
             children: [
-              Row(
-                children: [
-                  CircleAvatar(
-                    backgroundColor: Theme.of(context).primaryColor,
-                    child: Text(
-                      target.userName[0].toUpperCase(),
+              CircleAvatar(
+                backgroundColor: Theme.of(context).primaryColor,
+                backgroundImage: target.iconUrl.isNotEmpty
+                    ? NetworkImage(target.iconUrl)
+                    : null,
+                child: target.iconUrl.isEmpty
+                    ? Text(
+                        target.username.isNotEmpty
+                            ? target.username[0].toUpperCase()
+                            : '?',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      )
+                    : null,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      target.username,
                       style: const TextStyle(
-                        color: Colors.white,
                         fontWeight: FontWeight.bold,
+                        fontSize: 16,
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          target.userName,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'レビュー待ち',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(Icons.chevron_right, color: Colors.grey[400]),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.article_outlined,
-                      size: 20,
-                      color: Colors.grey[700],
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        target.artworkTitle,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey[800],
-                          fontWeight: FontWeight.w500,
-                        ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'レビュー待ち',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
                       ),
                     ),
                   ],
                 ),
               ),
+              const SizedBox(width: 12),
+              _WorkPreview(imageUrl: target.workImageUrl),
             ],
           ),
         ),
@@ -170,26 +268,59 @@ class _ReviewTargetCard extends StatelessWidget {
   }
 }
 
+class _WorkPreview extends StatelessWidget {
+  const _WorkPreview({required this.imageUrl});
+
+  final String imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: SizedBox(
+        width: 64,
+        height: 64,
+        child: imageUrl.isEmpty
+            ? Container(
+                color: Colors.grey[200],
+                child: const Icon(Icons.image_not_supported),
+              )
+            : Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    color: Colors.grey[300],
+                    child: const Icon(Icons.broken_image),
+                  );
+                },
+              ),
+      ),
+    );
+  }
+}
+
 // レビュー実行画面
-class ReviewExecutionScreen extends StatefulWidget {
-  final String artworkId;
+class ReviewExecutionScreen extends ConsumerStatefulWidget {
+  final String matchId;
   final String artworkImageUrl;
   final String artworkTitle;
   final String artistName;
 
   const ReviewExecutionScreen({
     super.key,
-    required this.artworkId,
+    required this.matchId,
     required this.artworkImageUrl,
     required this.artworkTitle,
     required this.artistName,
   });
 
   @override
-  State<ReviewExecutionScreen> createState() => _ReviewExecutionScreenState();
+  ConsumerState<ReviewExecutionScreen> createState() =>
+      _ReviewExecutionScreenState();
 }
 
-class _ReviewExecutionScreenState extends State<ReviewExecutionScreen> {
+class _ReviewExecutionScreenState extends ConsumerState<ReviewExecutionScreen> {
   final _commentController = TextEditingController();
   bool _isSubmitting = false;
 
@@ -207,17 +338,62 @@ class _ReviewExecutionScreenState extends State<ReviewExecutionScreen> {
       return;
     }
 
+    if (backendBaseUrl.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('BACKEND_BASE_URL が未設定です')),
+      );
+      return;
+    }
+
+    final user = ref.read(authControllerProvider).user;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('未ログインのため送信できません')),
+      );
+      return;
+    }
+
+    final Uri base;
+    try {
+      base = Uri.parse(backendBaseUrl);
+    } catch (_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('BACKEND_BASE_URL が不正です: $backendBaseUrl')),
+      );
+      return;
+    }
+
     setState(() => _isSubmitting = true);
 
-    // TODO: APIでレビューを送信
-    await Future.delayed(const Duration(seconds: 1));
+    try {
+      final res = await http
+          .post(
+            base.resolve('/review'),
+            headers: const {'content-type': 'application/json'},
+            body: jsonEncode(<String, dynamic>{
+              'match_id': widget.matchId,
+              'from_user_id': user.id,
+              'comment': _commentController.text.trim(),
+            }),
+          )
+          .timeout(const Duration(seconds: 8));
 
-    if (mounted) {
+      if (res.statusCode < 200 || res.statusCode >= 300) {
+        throw Exception('レビュー送信に失敗しました: ${res.statusCode}');
+      }
+
+      if (!mounted) return;
       setState(() => _isSubmitting = false);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('レビューを送信しました')),
       );
       Navigator.pop(context);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isSubmitting = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
     }
   }
 
@@ -282,7 +458,9 @@ class _ReviewExecutionScreenState extends State<ReviewExecutionScreen> {
                           radius: 16,
                           backgroundColor: Theme.of(context).primaryColor,
                           child: Text(
-                            widget.artistName[0].toUpperCase(),
+                            widget.artistName.isNotEmpty
+                                ? widget.artistName[0].toUpperCase()
+                                : '?',
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 14,
