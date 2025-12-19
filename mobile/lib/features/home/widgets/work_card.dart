@@ -26,7 +26,9 @@ class WorkCard extends StatelessWidget {
                 colors: [
                   Color(0x00000000),
                   Color(0x00000000),
-                  Color(0xAA000000),
+                  Color(0x00000000),
+                  Color(0x00000000),
+                  Color(0xCC000000), // Darker bottom for better text contrast
                 ],
               ),
             ),
@@ -45,7 +47,14 @@ class WorkCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.titleLarge?.copyWith(
                     color: Colors.white,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.bold,
+                    shadows: [
+                      Shadow(
+                        offset: Offset(0, 2),
+                        blurRadius: 4,
+                        color: Colors.black54,
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 6),

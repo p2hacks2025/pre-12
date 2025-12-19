@@ -4,6 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:http/http.dart' as http;
 
+import '../../config.dart';
+import '../auth/auth_controller.dart';
+
 // フロントのみでUIを確認したい場合は true にする
 const bool _useMockReceivedReviews = true;
 
@@ -121,7 +124,7 @@ class ReviewService {
     }
 
     if (backendBaseUrl.trim().isEmpty) {
-      ref.read(acceptedReviewsProvider.notifier).state = AsyncValue.error(
+      ref.read(receivedReviewsProvider.notifier).state = AsyncValue.error(
         Exception('BACKEND_BASE_URL が未設定です'),
         StackTrace.current,
       );
@@ -130,7 +133,7 @@ class ReviewService {
 
     final user = ref.read(authControllerProvider).user;
     if (user == null) {
-      ref.read(acceptedReviewsProvider.notifier).state = AsyncValue.error(
+      ref.read(receivedReviewsProvider.notifier).state = AsyncValue.error(
         Exception('未ログインのためレビューを取得できません'),
         StackTrace.current,
       );
@@ -141,7 +144,7 @@ class ReviewService {
     try {
       base = Uri.parse(backendBaseUrl);
     } catch (_) {
-      ref.read(acceptedReviewsProvider.notifier).state = AsyncValue.error(
+      ref.read(receivedReviewsProvider.notifier).state = AsyncValue.error(
         Exception('BACKEND_BASE_URL が不正です: $backendBaseUrl'),
         StackTrace.current,
       );

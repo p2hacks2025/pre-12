@@ -136,6 +136,26 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         : const Text('ログイン'),
                   ),
                 ),
+                if (const bool.fromEnvironment('dart.vm.product') == false) ...[
+                  const SizedBox(height: 24),
+                  Center(
+                    child: TextButton(
+                      onPressed: () {
+                        ref
+                            .read(authControllerProvider.notifier)
+                            .setLocalUser(
+                              id: 'mock_user_id',
+                              email: 'mock@example.com',
+                              displayName: 'Mock User',
+                            );
+                      },
+                      child: const Text(
+                        '開発用スキップ',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

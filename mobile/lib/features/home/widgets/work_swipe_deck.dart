@@ -110,15 +110,15 @@ class _DismissibleTopCard extends ConsumerWidget {
       },
       background: _SwipeBackground(
         alignment: Alignment.centerLeft,
-        icon: Icons.star,
-        label: 'いいね',
-        color: Theme.of(context).colorScheme.primaryContainer,
+        icon: Icons.diamond,
+        label: '素敵！',
+        color: const Color(0xFFFFD700), // Gold/Yellow
       ),
       secondaryBackground: _SwipeBackground(
         alignment: Alignment.centerRight,
         icon: Icons.close,
         label: 'スキップ',
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        color: const Color(0xFF90A4AE), // Cool Grey/Blue
       ),
       child: _CardFrame(
         child: WorkCard(work: work, onLike: () => onSwipe(true)),
@@ -145,7 +145,7 @@ class _SwipeBackground extends StatelessWidget {
     final theme = Theme.of(context);
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: color,
+        color: color.withOpacity(0.9), // Slightly transparent
         borderRadius: BorderRadius.circular(20),
       ),
       child: Align(
@@ -155,9 +155,15 @@ class _SwipeBackground extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 42, color: theme.colorScheme.onSurface),
+              Icon(icon, size: 42, color: Colors.white),
               const SizedBox(height: 6),
-              Text(label, style: theme.textTheme.labelLarge),
+              Text(
+                label,
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
         ),
@@ -178,10 +184,10 @@ class _CardFrame extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            blurRadius: 16,
-            spreadRadius: 0,
+            blurRadius: 24,
+            spreadRadius: 2,
             offset: const Offset(0, 8),
-            color: Colors.black.withOpacity(0.12),
+            color: Colors.black.withOpacity(0.15),
           ),
         ],
       ),
