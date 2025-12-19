@@ -37,10 +37,24 @@ class _UploadArtworkPageState extends ConsumerState<UploadArtworkPage> {
   int? _fileSize;
 
   @override
+  void initState() {
+    super.initState();
+    // 入力変更時にも再描画して送信ボタンの有効/無効を切り替える
+    _titleCtrl.addListener(_handleTextChange);
+    _descCtrl.addListener(_handleTextChange);
+  }
+
+  @override
   void dispose() {
+    _titleCtrl.removeListener(_handleTextChange);
+    _descCtrl.removeListener(_handleTextChange);
     _titleCtrl.dispose();
     _descCtrl.dispose();
     super.dispose();
+  }
+
+  void _handleTextChange() {
+    setState(() {});
   }
 
   String? _validateSelectedFile() {
