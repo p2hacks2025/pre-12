@@ -159,13 +159,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       minimumSize: Size.zero,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
-                    child: RichText(
-                      text: TextSpan(
-                        text: 'アカウントを作成する',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.primary,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    child: Text(
+                      'アカウントを作成する',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
