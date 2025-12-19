@@ -22,14 +22,11 @@ class InlineErrorBanner extends StatelessWidget {
             Icon(
               Icons.error_outline,
               color: colors.error,
-              semanticsLabel: 'エラー',
+              semanticLabel: 'エラー',
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: Text(
-                message,
-                style: TextStyle(color: colors.error),
-              ),
+              child: Text(message, style: TextStyle(color: colors.error)),
             ),
           ],
         ),

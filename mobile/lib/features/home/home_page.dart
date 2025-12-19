@@ -18,8 +18,8 @@ class HomePage extends ConsumerStatefulWidget {
 class _HomePageState extends ConsumerState<HomePage> {
   int _index = 0;
 
-  Future<void> _handleLogout() async {
-    await ref.read(authControllerProvider.notifier).logout();
+  void _handleLogout() {
+    ref.read(authControllerProvider.notifier).logout();
     if (!mounted) return;
     Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
   }
