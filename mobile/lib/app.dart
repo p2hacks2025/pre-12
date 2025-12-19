@@ -18,7 +18,22 @@ class App extends ConsumerWidget {
     return MaterialApp(
       title: 'p2hacks',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        scaffoldBackgroundColor: Colors.white,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFFFFD700), // Yellow/Gold
+          primary: const Color(0xFFFFD700),
+          surface: Colors.white,
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
+          elevation: 0,
+        ),
+        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+          backgroundColor: Colors.white,
+          selectedItemColor: Color(0xFFE6C200), // Darker Yellow for visibility
+          unselectedItemColor: Colors.grey,
+        ),
       ),
       home: auth.user == null
           ? isFirstLaunchAsync.when(

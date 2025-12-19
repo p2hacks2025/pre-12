@@ -34,7 +34,7 @@ class _HomePageState extends ConsumerState<HomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        // backgroundColor: Theme.of(context).colorScheme.inversePrimary, // Removed to use global theme
         title: Text(titles[_index]),
       ),
       body: SafeArea(

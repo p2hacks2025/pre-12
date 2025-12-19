@@ -6,6 +6,9 @@ import 'package:http/http.dart' as http;
 import 'package:p2hacks_onyx/features/auth/auth_controller.dart';
 import 'package:p2hacks_onyx/config.dart';
 
+import '../../config.dart';
+import '../auth/auth_controller.dart';
+
 // フロントのみでUIを確認したい場合は true にする
 const bool _useMockReceivedReviews = true;
 
