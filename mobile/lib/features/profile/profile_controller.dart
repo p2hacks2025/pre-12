@@ -77,7 +77,6 @@ class ProfileController extends StateNotifier<ProfileState> {
 
     state = state.copyWith(
       isLoading: true,
-      isLoadingWorks: false,
       clearError: true,
     );
     try {
