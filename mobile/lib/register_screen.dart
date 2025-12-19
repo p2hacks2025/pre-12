@@ -89,7 +89,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final blockingReason = _blockingReason();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('新規登録')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
