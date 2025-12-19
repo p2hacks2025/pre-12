@@ -1,67 +1,68 @@
-name: "🐛 Bug report"
-description: "不具合の報告"
-title: "[Bug]: "
-labels: ["bug"]
-body:
-  - type: markdown
-    attributes:
-      value: |
-        できるだけ再現手順を具体的に書いてください。スクショやログがあると助かります。
+<!-- I want to discuss in Japanese. -->
 
-  - type: textarea
-    id: summary
-    attributes:
-      label: 概要
-      description: 何が起きているか
-      placeholder: 例）ログイン後、プロフィール画面でクラッシュする
-    validations:
-      required: true
+# 概要
 
-  - type: textarea
-    id: steps
-    attributes:
-      label: 再現手順
-      description: 手順を番号付きで
-      placeholder: |
-        1.
-        2.
-        3.
-    validations:
-      required: true
+<!-- 1行で要点を書く（何のIssueか） -->
 
-  - type: textarea
-    id: expected
-    attributes:
-      label: 期待する挙動
-      placeholder: 例）クラッシュせずにプロフィールが表示される
-    validations:
-      required: true
+# 背景 / 問題点
 
-  - type: textarea
-    id: actual
-    attributes:
-      label: 実際の挙動
-      placeholder: 例）画面遷移直後にクラッシュする
-    validations:
-      required: true
+<!-- なぜこのIssueが必要か -->
 
-  - type: textarea
-    id: env
-    attributes:
-      label: 環境
-      description: OS / ブラウザ / 端末 / バージョンなど
-      placeholder: |
-        - OS:
-        - Browser:
-        - Device:
-        - App version:
-    validations:
-      required: false
+<!-- 現状・困っていること・発生条件など -->
 
-  - type: textarea
-    id: logs
-    attributes:
-      label: ログ / スクリーンショット
-      description: あれば貼ってください
-    validations:
-      required: false
+*
+
+# やりたいこと / 期待する状態
+
+<!-- ゴールを明確に -->
+
+<!-- 完了条件が分かるように -->
+
+*
+
+# 対応内容（案）
+
+<!-- 実装・対応のタスクを分解 -->
+
+<!-- 完了したもののみチェックを入れる -->
+
+* [ ]
+
+# 影響範囲
+
+<!-- 該当するものにチェック -->
+
+* [ ] Frontend
+* [ ] Backend
+* [ ] Mobile
+* [ ] Infra / CI
+* [ ] Docs
+* [ ] その他（記述）
+
+# 確認ポイント
+
+<!-- 実装後に確認すべき観点 -->
+
+<!-- レビュアー・実装者共通のチェックリスト -->
+
+* [ ]
+
+# UI / 挙動イメージ（任意）
+
+|           期待する状態           |  補足 |
+| :------------------------: | :-: |
+| <img src="" width="200" /> |     |
+
+# 関連 Issue / PR
+
+* Related:
+* Blocked by:
+* Blocks:
+
+# メモ
+
+<!-- 実装上の注意、制約、補足 -->
+
+*
+
+<!-- I want to discuss in Japanese. -->
