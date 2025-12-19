@@ -21,14 +21,13 @@ class ProfileState {
   final UserProfile? profile;
   final List<MyWork> myWorks;
 
-  factory ProfileState.initial() =>
-      const ProfileState(
-        isLoading: false,
-        isLoadingWorks: false,
-        error: null,
-        profile: null,
-        myWorks: <MyWork>[],
-      );
+  factory ProfileState.initial() => const ProfileState(
+    isLoading: false,
+    isLoadingWorks: false,
+    error: null,
+    profile: null,
+    myWorks: <MyWork>[],
+  );
 
   ProfileState copyWith({
     bool? isLoading,
@@ -78,30 +77,19 @@ class ProfileController extends StateNotifier<ProfileState> {
 
     state = state.copyWith(
       isLoading: true,
-      isLoadingWorks: true,
+      isLoadingWorks: false,
       clearError: true,
     );
     try {
-      final results = await Future.wait([
-        _service.getMyProfile(userId: user.id),
-        _service.getMyWorks(userId: user.id),
-      ]);
-
-      final profile = results[0] as UserProfile?;
-      final works = results[1] as List<MyWork>;
+      final profile = await _service.getMyProfile(userId: user.id);
 
       state = state.copyWith(
         isLoading: false,
-        isLoadingWorks: false,
         profile: profile,
-        myWorks: works,
+        myWorks: const <MyWork>[],
       );
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        isLoadingWorks: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
