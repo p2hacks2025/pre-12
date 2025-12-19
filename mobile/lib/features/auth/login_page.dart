@@ -156,17 +156,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                     child: RichText(
                       text: TextSpan(
-                        style: const TextStyle(color: Colors.black87),
-                        children: [
-                          const TextSpan(text: 'アカウントをお持ちではありませんか？ '),
-                          TextSpan(
-                            text: '新規登録',
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.primary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
+                        text: 'アカウントを作成する',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
