@@ -59,6 +59,14 @@ class AuthController extends StateNotifier<AuthState> {
     }
   }
 
+  void completeSignUp({required String userId, required String displayName}) {
+    state = AuthState(
+      user: DummyUser(id: userId, displayName: displayName),
+      isLoading: false,
+      error: null,
+    );
+  }
+
   void logout() {
     state = AuthState.signedOut();
   }

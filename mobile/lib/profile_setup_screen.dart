@@ -5,17 +5,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'features/auth/auth_controller.dart';
-import 'features/auth/models.dart';
 import 'features/home/home_page.dart';
 import 'features/onboarding/first_launch.dart';
 
 class ProfileSetupScreen extends ConsumerStatefulWidget {
   const ProfileSetupScreen({
     super.key,
+    required this.userId,
     required this.username,
     required this.email,
   });
 
+  final String userId;
   final String username;
   final String email;
 
@@ -86,9 +87,9 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
       ref.invalidate(firstLaunchProvider);
 
       final displayName = _displayNameCtrl.text.trim();
-      await ref
+      ref
           .read(authControllerProvider.notifier)
-          .login(DummyUser(id: widget.username, displayName: displayName));
+          .completeSignUp(userId: widget.userId, displayName: displayName);
 
       if (!mounted) return;
       Navigator.of(context).pushAndRemoveUntil(
