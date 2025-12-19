@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../review_screen.dart';
 import '../../upload.dart';
 import '../auth/auth_controller.dart';
-import '../auth/login_page.dart';
 import '../profile/profile_display_page.dart';
 import '../review/received_review_list_page.dart';
 import 'widgets/work_swipe_deck.dart';
@@ -21,11 +20,6 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   void _handleLogout() {
     ref.read(authControllerProvider.notifier).logout();
-    if (!mounted) return;
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const LoginPage()),
-      (route) => false,
-    );
   }
 
   @override
