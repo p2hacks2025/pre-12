@@ -112,7 +112,6 @@ class _ProfileDisplayPageState extends ConsumerState<ProfileDisplayPage> {
                     ),
                     const SizedBox(height: 24),
                     // 自己紹介
-                    // 自己紹介
                     SizedBox(
                       width: double.infinity,
                       child: Column(
