@@ -1,13 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 // フロントのみでUIを確認したい場合は true にする
-const bool _useMockAcceptedReviews = true;
+const bool _useMockReceivedReviews = true;
 
-// 承認済みレビューのデータモデル
-class AcceptedReview {
+// 受信レビューのデータモデル
+class ReceivedReview {
   final String id;
   final String userId;
   final String userName;
@@ -15,9 +16,8 @@ class AcceptedReview {
   final String? workId;
   final String? workTitle;
   final DateTime createdAt;
-  final bool isAccepted;
 
-  AcceptedReview({
+  ReceivedReview({
     required this.id,
     required this.userId,
     required this.userName,
@@ -25,11 +25,10 @@ class AcceptedReview {
     this.workId,
     this.workTitle,
     required this.createdAt,
-    required this.isAccepted,
   });
 
-  factory AcceptedReview.fromJson(Map<String, dynamic> json) {
-    return AcceptedReview(
+  factory ReceivedReview.fromJson(Map<String, dynamic> json) {
+    return ReceivedReview(
       id: json['id'] as String,
       userId: json['user_id'] as String,
       userName: json['user_name'] as String? ?? 'Unknown User',
@@ -37,14 +36,13 @@ class AcceptedReview {
       workId: json['work_id'] as String?,
       workTitle: json['work_title'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
-      isAccepted: json['is_accepted'] as bool? ?? false,
     );
   }
 }
 
 // UI確認用のモックデータ
-final List<AcceptedReview> _mockAcceptedReviews = <AcceptedReview>[
-  AcceptedReview(
+final List<ReceivedReview> _mockReceivedReviews = <ReceivedReview>[
+  ReceivedReview(
     id: '1',
     userId: 'user1',
     userName: '田中太郎',
@@ -52,9 +50,8 @@ final List<AcceptedReview> _mockAcceptedReviews = <AcceptedReview>[
     workId: 'work1',
     workTitle: '夕焼けの風景画',
     createdAt: DateTime.now().subtract(const Duration(minutes: 5)),
-    isAccepted: true,
   ),
-  AcceptedReview(
+  ReceivedReview(
     id: '2',
     userId: 'user2',
     userName: '佐藤花子',
@@ -62,9 +59,8 @@ final List<AcceptedReview> _mockAcceptedReviews = <AcceptedReview>[
     workId: 'work2',
     workTitle: '都会の夜景',
     createdAt: DateTime.now().subtract(const Duration(hours: 2)),
-    isAccepted: true,
   ),
-  AcceptedReview(
+  ReceivedReview(
     id: '3',
     userId: 'user3',
     userName: '山田次郎',
@@ -72,9 +68,8 @@ final List<AcceptedReview> _mockAcceptedReviews = <AcceptedReview>[
     workId: null,
     workTitle: null,
     createdAt: DateTime.now().subtract(const Duration(days: 1)),
-    isAccepted: true,
   ),
-  AcceptedReview(
+  ReceivedReview(
     id: '4',
     userId: 'user4',
     userName: 'Mike Johnson',
@@ -82,9 +77,8 @@ final List<AcceptedReview> _mockAcceptedReviews = <AcceptedReview>[
     workId: 'work3',
     workTitle: '春の桜',
     createdAt: DateTime.now().subtract(const Duration(days: 3)),
-    isAccepted: true,
   ),
-  AcceptedReview(
+  ReceivedReview(
     id: '5',
     userId: 'user5',
     userName: '鈴木一郎',
@@ -92,12 +86,11 @@ final List<AcceptedReview> _mockAcceptedReviews = <AcceptedReview>[
     workId: 'work4',
     workTitle: '抽象画アート',
     createdAt: DateTime.now().subtract(const Duration(days: 10)),
-    isAccepted: true,
   ),
 ];
 
-// 承認済みレビューのリストを管理するプロバイダー
-final acceptedReviewsProvider = StateProvider<AsyncValue<List<AcceptedReview>>>(
+// 受信レビューのリストを管理するプロバイダー
+final receivedReviewsProvider = StateProvider<AsyncValue<List<ReceivedReview>>>(
   (ref) {
     return const AsyncValue.loading();
   },
@@ -113,24 +106,55 @@ class ReviewService {
 
   ReviewService(this.ref);
 
-  // 承認済みレビューを取得
-  Future<void> fetchAcceptedReviews() async {
-    ref.read(acceptedReviewsProvider.notifier).state =
+  // 受信レビューを取得
+  Future<void> fetchReceivedReviews() async {
+    ref.read(receivedReviewsProvider.notifier).state =
         const AsyncValue.loading();
 
     // モックデータでUI確認
-    if (_useMockAcceptedReviews) {
+    if (_useMockReceivedReviews) {
       await Future.delayed(const Duration(milliseconds: 400));
-      ref.read(acceptedReviewsProvider.notifier).state = AsyncValue.data(
-        _mockAcceptedReviews,
+      ref.read(receivedReviewsProvider.notifier).state = AsyncValue.data(
+        _mockReceivedReviews,
       );
       return;
     }
 
+    if (backendBaseUrl.trim().isEmpty) {
+      ref.read(acceptedReviewsProvider.notifier).state = AsyncValue.error(
+        Exception('BACKEND_BASE_URL が未設定です'),
+        StackTrace.current,
+      );
+      return;
+    }
+
+    final user = ref.read(authControllerProvider).user;
+    if (user == null) {
+      ref.read(acceptedReviewsProvider.notifier).state = AsyncValue.error(
+        Exception('未ログインのためレビューを取得できません'),
+        StackTrace.current,
+      );
+      return;
+    }
+
+    final Uri base;
     try {
-      // TODO: 実際のAPIエンドポイントに置き換える
+      base = Uri.parse(backendBaseUrl);
+    } catch (_) {
+      ref.read(acceptedReviewsProvider.notifier).state = AsyncValue.error(
+        Exception('BACKEND_BASE_URL が不正です: $backendBaseUrl'),
+        StackTrace.current,
+      );
+      return;
+    }
+
+    final uri = base
+        .resolve('/reviews')
+        .replace(queryParameters: <String, String>{'user_id': user.id});
+
+    try {
       final response = await http.get(
-        Uri.parse('http://localhost:8080/api/reviews/accepted'),
+        uri,
         headers: {
           'Content-Type': 'application/json',
           // TODO: 認証トークンを追加
@@ -141,54 +165,22 @@ class ReviewService {
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         final reviews = data
-            .map((json) => AcceptedReview.fromJson(json))
+            .map((json) => ReceivedReview.fromJson(json))
             .toList();
 
-        ref.read(acceptedReviewsProvider.notifier).state = AsyncValue.data(
+        ref.read(receivedReviewsProvider.notifier).state = AsyncValue.data(
           reviews,
         );
       } else {
         throw Exception(
-          'Failed to load accepted reviews: ${response.statusCode}',
+          'Failed to load received reviews: ${response.statusCode}',
         );
       }
     } catch (e, stack) {
-      ref.read(acceptedReviewsProvider.notifier).state = AsyncValue.error(
+      ref.read(receivedReviewsProvider.notifier).state = AsyncValue.error(
         e,
         stack,
       );
-    }
-  }
-
-  // レビューを承認する
-  Future<bool> acceptReview(String reviewId) async {
-    // モック時は即成功にしてリストをリフレッシュ
-    if (_useMockAcceptedReviews) {
-      await Future.delayed(const Duration(milliseconds: 200));
-      await fetchAcceptedReviews();
-      return true;
-    }
-
-    try {
-      // TODO: 実際のAPIエンドポイントに置き換える
-      final response = await http.post(
-        Uri.parse('http://localhost:8080/api/reviews/$reviewId/accept'),
-        headers: {
-          'Content-Type': 'application/json',
-          // TODO: 認証トークンを追加
-          // 'Authorization': 'Bearer $token',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        // 承認後、リストを再取得
-        await fetchAcceptedReviews();
-        return true;
-      } else {
-        return false;
-      }
-    } catch (e) {
-      return false;
     }
   }
 }

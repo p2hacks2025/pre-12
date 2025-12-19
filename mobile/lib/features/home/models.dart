@@ -21,7 +21,7 @@ class Work {
 
   factory Work.fromJson(Map<String, dynamic> json) {
     return Work(
-      id: (json['id'] as String?) ?? '',
+      id: (json['id'] as String?) ?? (json['work_id'] as String?) ?? '',
       userId: (json['user_id'] as String?) ?? '',
       username: (json['username'] as String?) ?? '',
       iconUrl: (json['icon_url'] as String?) ?? '',

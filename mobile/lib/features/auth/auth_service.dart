@@ -5,16 +5,26 @@ import 'package:http/http.dart' as http;
 import '../../config.dart';
 import 'models.dart';
 
-class DummyAuthService {
-  const DummyAuthService({http.Client? client}) : _client = client;
+class AuthService {
+  const AuthService({http.Client? client}) : _client = client;
 
   final http.Client? _client;
 
-  Future<DummyLoginResult> login(DummyUser user) async {
+  Future<AuthLoginResult> login({
+    required String email,
+    required String password,
+  }) async {
     // backendが未完成な間は、URL未指定なら成功扱いにする。
     if (backendBaseUrl.trim().isEmpty) {
       await Future<void>.delayed(const Duration(milliseconds: 400));
-      return DummyLoginResult(user: user);
+      final displayName = _guessDisplayName(email);
+      return AuthLoginResult(
+        user: AuthUser(
+          id: email,
+          email: email,
+          displayName: displayName,
+        ),
+      );
     }
 
     final Uri uri;
@@ -30,7 +40,10 @@ class DummyAuthService {
           .post(
             uri,
             headers: const {'content-type': 'application/json'},
-            body: jsonEncode(user.toJson()),
+            body: jsonEncode(<String, dynamic>{
+              'email': email,
+              'password': password,
+            }),
           )
           .timeout(const Duration(seconds: 5));
 
@@ -38,11 +51,29 @@ class DummyAuthService {
         throw Exception('ログイン失敗: ${res.statusCode} ${res.body}');
       }
 
-      return DummyLoginResult(user: user);
+      final decoded = jsonDecode(res.body);
+      if (decoded is! Map || decoded['user_id'] is! String) {
+        throw Exception('ログイン応答が不正です: ${res.body}');
+      }
+      final userId = decoded['user_id'] as String;
+      return AuthLoginResult(
+        user: AuthUser(
+          id: userId,
+          email: email,
+          displayName: _guessDisplayName(email),
+        ),
+      );
     } finally {
       if (_client == null) {
         client.close();
       }
     }
+  }
+
+  String _guessDisplayName(String email) {
+    final trimmed = email.trim();
+    final at = trimmed.indexOf('@');
+    if (at <= 0) return trimmed;
+    return trimmed.substring(0, at);
   }
 }
