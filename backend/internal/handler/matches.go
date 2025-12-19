@@ -32,7 +32,7 @@ func GetMatches(c *gin.Context) {
 		  u.id AS user_id,
 		  u.username,
 		  u.icon_path,
-		  w.image_url AS work_image_url
+		  w.image_path AS work_image_path
 		FROM public.matches m
 		JOIN public.users u
 		  ON u.id = CASE
