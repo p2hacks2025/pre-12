@@ -141,14 +141,19 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 // 新規登録リンク
                 Align(
                   alignment: Alignment.centerRight,
-                  child: GestureDetector(
-                    onTap: () {
+                  child: TextButton(
+                    onPressed: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (_) => const RegisterScreen(),
                         ),
                       );
                     },
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
                     child: RichText(
                       text: TextSpan(
                         style: const TextStyle(color: Colors.black87),
