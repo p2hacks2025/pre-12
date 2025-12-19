@@ -30,3 +30,7 @@ func withSwipe(r *gin.Engine) {
 func withReview(r *gin.Engine) {
 	r.POST("/review", PostReview)
 }
+
+func withReceivedReviews(r *gin.Engine) {
+	r.GET("/reviews", GetReceivedReviews)
+}

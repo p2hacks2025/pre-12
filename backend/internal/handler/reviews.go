@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/p2hacks2025/pre-12/backend/internal/db"
@@ -60,7 +61,9 @@ func GetReceivedReviews(c *gin.Context) {
 
 	for rows.Next() {
 		var r ReceivedReviewResponse
-		var iconPath, workPath string
+		var iconPath, workPath *string
+		var createdAt time.Time
+
 		if err := rows.Scan(
 			&r.ReviewID,
 			&r.MatchID,
@@ -70,14 +73,29 @@ func GetReceivedReviews(c *gin.Context) {
 			&r.WorkID,
 			&workPath,
 			&r.Comment,
-			&r.CreatedAt,
+			&createdAt,
 		); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		// path → URL
-		r.IconURL = lib.BuildPublicURL(iconPath)
-		r.WorkImageURL = lib.BuildPublicURL(workPath)
+
+		const DefaultIconPath = "icons/default.png"
+		const DefaultWorkImagePath = "images/default.png"
+
+		if iconPath != nil {
+			r.IconURL = lib.BuildPublicURL(*iconPath)
+		} else {
+			r.IconURL = lib.BuildPublicURL(DefaultIconPath)
+		}
+
+		if workPath != nil {
+			r.WorkImageURL = lib.BuildPublicURL(*workPath)
+		} else {
+			r.WorkImageURL = lib.BuildPublicURL(DefaultWorkImagePath)
+		}
+
+		r.CreatedAt = createdAt.Format(time.RFC3339)
+
 		reviews = append(reviews, r)
 	}
 

@@ -89,16 +89,30 @@ func GetWorks(c *gin.Context) {
 	var works []WorkResponse
 	for rows.Next() {
 		var w WorkResponse
-		var iconPath, imagePath string
+		var iconPath, imagePath *string
 		var createdAt time.Time
 		if err := rows.Scan(&w.ID, &w.UserID, &w.Username, &iconPath, &imagePath, &w.Title, &w.Description, &createdAt); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
-		// パスをURLに変換
-		w.IconURL = lib.BuildPublicURL(iconPath)
-		w.ImageURL = lib.BuildPublicURL(imagePath)
+		const DefaultIconPath = "icons/default.png"
+		const DefaultImagePath = "images/default.png"
+
+		// icon_url（必ず返す）
+		if iconPath != nil {
+			w.IconURL = lib.BuildPublicURL(*iconPath)
+		} else {
+			w.IconURL = lib.BuildPublicURL(DefaultIconPath)
+		}
+
+		// image_url（必ず返す）
+		if imagePath != nil {
+			w.ImageURL = lib.BuildPublicURL(*imagePath)
+		} else {
+			w.ImageURL = lib.BuildPublicURL(DefaultImagePath)
+		}
+
 		w.CreatedAt = createdAt.Format(time.RFC3339)
 
 		works = append(works, w)
