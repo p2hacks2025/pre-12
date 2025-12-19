@@ -51,6 +51,47 @@ class DummyAuthService {
     }
   }
 
+  Future<LoginResult> loginWithEmailPassword(LoginRequest request) async {
+    // backendが未完成な間は、URL未指定なら成功扱いにする。
+    if (_effectiveBaseUrl.trim().isEmpty) {
+      await Future<void>.delayed(const Duration(milliseconds: 400));
+      return LoginResult(userId: request.email);
+    }
+
+    final Uri uri;
+    try {
+      uri = Uri.parse(_effectiveBaseUrl).resolve('/login');
+    } catch (_) {
+      throw Exception('BACKEND_BASE_URL が不正です: $_effectiveBaseUrl');
+    }
+
+    final client = _client ?? http.Client();
+    try {
+      final res = await client
+          .post(
+            uri,
+            headers: const {'content-type': 'application/json'},
+            body: jsonEncode(request.toJson()),
+          )
+          .timeout(const Duration(seconds: 8));
+
+      if (res.statusCode < 200 || res.statusCode >= 300) {
+        throw Exception('ログイン失敗: ${res.statusCode} ${res.body}');
+      }
+
+      final decoded = jsonDecode(res.body);
+      if (decoded is! Map<String, dynamic>) {
+        throw Exception('ログインの応答が不正です');
+      }
+
+      return LoginResult.fromJson(decoded);
+    } finally {
+      if (_client == null) {
+        client.close();
+      }
+    }
+  }
+
   Future<SignUpResult> signUp(SignUpRequest request) async {
     // backendが未完成な間は、URL未指定なら成功扱いにする。
     if (_effectiveBaseUrl.trim().isEmpty) {

@@ -59,6 +59,27 @@ class AuthController extends StateNotifier<AuthState> {
     }
   }
 
+  Future<void> loginWithEmailPassword({
+    required String email,
+    required String password,
+  }) async {
+    if (state.isLoading) return;
+
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      final result = await _auth.loginWithEmailPassword(
+        LoginRequest(email: email, password: password),
+      );
+      state = AuthState(
+        user: DummyUser(id: result.userId, displayName: ''),
+        isLoading: false,
+        error: null,
+      );
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
   void completeSignUp({required String userId, required String displayName}) {
     state = AuthState(
       user: DummyUser(id: userId, displayName: displayName),

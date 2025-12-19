@@ -13,6 +13,32 @@ class DummyLoginResult {
   final DummyUser user;
 }
 
+class LoginRequest {
+  const LoginRequest({required this.email, required this.password});
+
+  final String email;
+  final String password;
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'email': email,
+    'password': password,
+  };
+}
+
+class LoginResult {
+  const LoginResult({required this.userId});
+
+  final String userId;
+
+  factory LoginResult.fromJson(Map<String, dynamic> json) {
+    final userId = json['user_id'];
+    if (userId is! String || userId.isEmpty) {
+      throw Exception('login 応答に user_id がありません');
+    }
+    return LoginResult(userId: userId);
+  }
+}
+
 class SignUpRequest {
   const SignUpRequest({
     required this.username,
