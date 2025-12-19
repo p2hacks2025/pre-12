@@ -110,7 +110,7 @@ class _DismissibleTopCard extends ConsumerWidget {
       },
       background: _SwipeBackground(
         alignment: Alignment.centerLeft,
-        icon: Icons.favorite,
+        icon: Icons.star,
         label: 'いいね',
         color: Theme.of(context).colorScheme.primaryContainer,
       ),
