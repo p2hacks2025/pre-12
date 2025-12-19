@@ -80,3 +80,27 @@ func UploadToSupabase(
 	// ⑨ 正常終了
 	return nil
 }
+
+// DeleteFromSupabase は指定バケット内のファイルを削除する
+func DeleteFromSupabase(ctx context.Context, bucket, path string) error {
+	url := fmt.Sprintf("%s/storage/v1/object/%s/%s", os.Getenv("SUPABASE_URL"), bucket, path)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+os.Getenv("SUPABASE_SERVICE_ROLE_KEY"))
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode >= 300 {
+		return fmt.Errorf("delete failed: %s", res.Status)
+	}
+
+	return nil
+}

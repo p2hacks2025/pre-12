@@ -42,3 +42,7 @@ func withWorks(r *gin.Engine) {
 func withMatches(r *gin.Engine) {
 	r.GET("/matches", GetMatches)
 }
+
+func withPostWork(r *gin.Engine) {
+	r.POST("/work", PostWork)
+}
