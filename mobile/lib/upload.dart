@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 
 import 'config.dart';
 import 'features/auth/auth_controller.dart';
+import 'widgets/inline_error_banner.dart';
 
 class UploadArtworkPage extends ConsumerStatefulWidget {
   const UploadArtworkPage({super.key});
@@ -29,6 +30,7 @@ class _UploadArtworkPageState extends ConsumerState<UploadArtworkPage> {
   final _descCtrl = TextEditingController();
 
   bool _isSubmitting = false;
+  String? _submitError;
 
   // 選択されたファイル情報（Web/モバイル両対応）
   String? _fileName;
@@ -54,7 +56,7 @@ class _UploadArtworkPageState extends ConsumerState<UploadArtworkPage> {
   }
 
   void _handleTextChange() {
-    setState(() {});
+    setState(() => _submitError = null);
   }
 
   String? _validateSelectedFile() {
@@ -101,15 +103,17 @@ class _UploadArtworkPageState extends ConsumerState<UploadArtworkPage> {
       _fileBytes = bytes;
       _filePath = path;
       _fileSize = size;
+      _submitError = null;
     });
 
     final err = _validateSelectedFile();
     if (err != null && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(err)));
+      setState(() => _submitError = err);
     }
   }
 
   Future<void> _submit() async {
+    setState(() => _submitError = null);
     // 1) フォーム検証
     final validForm = _formKey.currentState?.validate() ?? false;
     if (!validForm) return;
@@ -117,9 +121,7 @@ class _UploadArtworkPageState extends ConsumerState<UploadArtworkPage> {
     // 2) ファイル検証
     final fileErr = _validateSelectedFile();
     if (fileErr != null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(fileErr)));
+      setState(() => _submitError = fileErr);
       return;
     }
 
@@ -127,19 +129,28 @@ class _UploadArtworkPageState extends ConsumerState<UploadArtworkPage> {
 
     try {
       if (backendBaseUrl.trim().isEmpty) {
-        throw Exception('BACKEND_BASE_URL が未指定です');
+        setState(() {
+          _submitError = 'BACKEND_BASE_URL が未設定です。';
+        });
+        return;
       }
 
       final authUser = ref.read(authControllerProvider).user;
       if (authUser == null) {
-        throw Exception('ログインしてください');
+        setState(() {
+          _submitError = 'ログインしてください。';
+        });
+        return;
       }
 
       final Uri base;
       try {
         base = Uri.parse(backendBaseUrl);
       } catch (_) {
-        throw Exception('BACKEND_BASE_URL が不正です: $backendBaseUrl');
+        setState(() {
+          _submitError = 'BACKEND_BASE_URL が不正です。';
+        });
+        return;
       }
 
       final uri = base.resolve(uploadPath);
@@ -194,15 +205,16 @@ class _UploadArtworkPageState extends ConsumerState<UploadArtworkPage> {
         _titleCtrl.clear();
         _descCtrl.clear();
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('送信失敗: ${res.statusCode}\n${res.body}')),
-        );
+        setState(() {
+          _submitError =
+              '送信に失敗しました（${res.statusCode}）。時間をおいて再試行してください。';
+        });
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('通信エラー: $e')));
+      setState(() {
+        _submitError = '通信エラーが発生しました。時間をおいて再試行してください。';
+      });
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -212,6 +224,7 @@ class _UploadArtworkPageState extends ConsumerState<UploadArtworkPage> {
   Widget build(BuildContext context) {
     final fileErr = _validateSelectedFile();
     final hasFile = _fileName != null && fileErr == null;
+    final submitError = _submitError;
 
     Widget preview;
     if (_fileBytes != null) {
@@ -240,15 +253,19 @@ class _UploadArtworkPageState extends ConsumerState<UploadArtworkPage> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // 画像アップロード
-                const Text(
-                  'イラスト画像のアップロード',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (submitError != null) ...[
+                    InlineErrorBanner(message: submitError),
+                    const SizedBox(height: 12),
+                  ],
+                  // 画像アップロード
+                  const Text(
+                    'イラスト画像のアップロード',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
                 preview,

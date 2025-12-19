@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 
 import 'package:p2hacks_onyx/config.dart';
 import 'package:p2hacks_onyx/features/auth/auth_controller.dart';
+import 'widgets/inline_error_banner.dart';
 
 class MatchTarget {
   final String matchId;
@@ -397,6 +398,7 @@ class ReviewExecutionScreen extends ConsumerStatefulWidget {
 class _ReviewExecutionScreenState extends ConsumerState<ReviewExecutionScreen> {
   final _commentController = TextEditingController();
   bool _isSubmitting = false;
+  String? _submitError;
 
   @override
   void dispose() {
@@ -406,24 +408,24 @@ class _ReviewExecutionScreenState extends ConsumerState<ReviewExecutionScreen> {
 
   Future<void> _submitReview() async {
     if (_commentController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('レビューコメントを入力してください')),
-      );
+      setState(() {
+        _submitError = 'レビューコメントを入力してください。';
+      });
       return;
     }
 
     if (backendBaseUrl.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('BACKEND_BASE_URL が未設定です')),
-      );
+      setState(() {
+        _submitError = 'BACKEND_BASE_URL が未設定です。';
+      });
       return;
     }
 
     final user = ref.read(authControllerProvider).user;
     if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('未ログインのため送信できません')),
-      );
+      setState(() {
+        _submitError = '未ログインのため送信できません。';
+      });
       return;
     }
 
@@ -431,13 +433,16 @@ class _ReviewExecutionScreenState extends ConsumerState<ReviewExecutionScreen> {
     try {
       base = Uri.parse(backendBaseUrl);
     } catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('BACKEND_BASE_URL が不正です: $backendBaseUrl')),
-      );
+      setState(() {
+        _submitError = 'BACKEND_BASE_URL が不正です。';
+      });
       return;
     }
 
-    setState(() => _isSubmitting = true);
+    setState(() {
+      _isSubmitting = true;
+      _submitError = null;
+    });
 
     try {
       final res = await http
@@ -464,15 +469,16 @@ class _ReviewExecutionScreenState extends ConsumerState<ReviewExecutionScreen> {
       Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
-      setState(() => _isSubmitting = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_friendlyErrorMessage(e))),
-      );
+      setState(() {
+        _isSubmitting = false;
+        _submitError = _friendlyErrorMessage(e);
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final submitError = _submitError;
     return Scaffold(
       appBar: AppBar(
         title: const Text('作品をレビュー'),
@@ -561,11 +567,20 @@ class _ReviewExecutionScreenState extends ConsumerState<ReviewExecutionScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                    if (submitError != null) ...[
+                      const SizedBox(height: 8),
+                      InlineErrorBanner(message: submitError),
+                    ],
                     const SizedBox(height: 12),
                     TextField(
                       controller: _commentController,
                       maxLines: 8,
                       maxLength: 500,
+                      onChanged: (_) {
+                        if (_submitError != null) {
+                          setState(() => _submitError = null);
+                        }
+                      },
                       decoration: InputDecoration(
                         hintText: 'この作品についてのフィードバックを入力してください...',
                         border: OutlineInputBorder(

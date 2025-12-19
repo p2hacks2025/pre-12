@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../auth/auth_controller.dart';
 import 'profile_controller.dart';
+import '../../widgets/inline_error_banner.dart';
 
 class ProfileEditPage extends ConsumerStatefulWidget {
   const ProfileEditPage({super.key, required this.onSave});
@@ -22,6 +23,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
   final _bioCtrl = TextEditingController();
 
   XFile? _pickedIcon;
+  String? _submitError;
 
   @override
   void initState() {
@@ -54,16 +56,17 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
     if (image == null) return;
 
-    setState(() => _pickedIcon = image);
+    setState(() {
+      _pickedIcon = image;
+      _submitError = null;
+    });
   }
 
   Future<void> _save() async {
     final user = ref.read(authControllerProvider).user;
     if (user == null) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('未ログインです')));
+      setState(() => _submitError = '未ログインです。');
       return;
     }
 
@@ -74,6 +77,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
     final bio = _bioCtrl.text.trim();
 
     try {
+      setState(() => _submitError = null);
       final updated = await ref
           .read(profileControllerProvider.notifier)
           .update(username: username, bio: bio, icon: _pickedIcon);
@@ -94,9 +98,9 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
       widget.onSave();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('保存に失敗: $e')));
+      setState(() {
+        _submitError = '保存に失敗しました。時間をおいて再試行してください。';
+      });
     }
   }
 
@@ -104,6 +108,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
   Widget build(BuildContext context) {
     final state = ref.watch(profileControllerProvider);
     final profile = state.profile;
+    final inlineError = _submitError ?? state.error;
 
     ref.listen<ProfileState>(profileControllerProvider, (prev, next) {
       if (prev?.profile != next.profile && next.profile != null) {
@@ -147,6 +152,10 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                     label: const Text('アイコンを変更'),
                   ),
                 ),
+                if (inlineError != null) ...[
+                  const SizedBox(height: 12),
+                  InlineErrorBanner(message: inlineError),
+                ],
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _usernameCtrl,
@@ -178,6 +187,11 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                     if (t.length > 300) return '自己紹介は300文字以内にしてください';
                     return null;
                   },
+                  onChanged: (_) {
+                    if (_submitError != null) {
+                      setState(() => _submitError = null);
+                    }
+                  },
                 ),
                 const SizedBox(height: 16),
                 FilledButton(
@@ -191,11 +205,6 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
                       : const Text('保存'),
                 ),
                 const SizedBox(height: 12),
-                if (state.error != null)
-                  Text(
-                    state.error!,
-                    style: TextStyle(color: Theme.of(context).colorScheme.error),
-                  ),
               ],
             ),
           ),

@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'features/auth/auth_controller.dart';
 import 'features/home/home_page.dart';
 import 'features/onboarding/first_launch.dart';
+import 'widgets/inline_error_banner.dart';
 
 class ProfileSetupScreen extends ConsumerStatefulWidget {
   const ProfileSetupScreen({
@@ -31,6 +32,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
 
   Uint8List? _iconBytes;
   bool _isSubmitting = false;
+  String? _submitError;
 
   @override
   void dispose() {
@@ -68,12 +70,15 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
       final bytes = await xfile.readAsBytes();
       if (!mounted) return;
 
-      setState(() => _iconBytes = bytes);
+      setState(() {
+        _iconBytes = bytes;
+        _submitError = null;
+      });
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('アイコン画像の選択に失敗しました: $e')));
+      setState(() {
+        _submitError = 'アイコン画像の選択に失敗しました。時間をおいて再試行してください。';
+      });
     }
   }
 
@@ -81,7 +86,10 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     if (!_formKey.currentState!.validate()) return;
     if (!_canProceed()) return;
 
-    setState(() => _isSubmitting = true);
+    setState(() {
+      _isSubmitting = true;
+      _submitError = null;
+    });
     try {
       await markLaunched();
       ref.invalidate(firstLaunchProvider);
@@ -102,9 +110,9 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('登録処理に失敗しました: $e')));
+      setState(() {
+        _submitError = '登録処理に失敗しました。時間をおいて再試行してください。';
+      });
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -113,6 +121,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   @override
   Widget build(BuildContext context) {
     final blockingReason = _blockingReason();
+    final submitError = _submitError;
 
     return Scaffold(
       appBar: AppBar(
@@ -145,6 +154,10 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                       style: TextStyle(fontSize: 14, color: Colors.grey),
                       textAlign: TextAlign.center,
                     ),
+                    if (submitError != null) ...[
+                      const SizedBox(height: 12),
+                      InlineErrorBanner(message: submitError),
+                    ],
                     const SizedBox(height: 32),
 
                     Center(
@@ -197,7 +210,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                         }
                         return null;
                       },
-                      onChanged: (_) => setState(() {}),
+                      onChanged: (_) => setState(() => _submitError = null),
                     ),
 
                     const SizedBox(height: 16),
@@ -225,7 +238,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                         }
                         return null;
                       },
-                      onChanged: (_) => setState(() {}),
+                      onChanged: (_) => setState(() => _submitError = null),
                     ),
 
                     const SizedBox(height: 24),
