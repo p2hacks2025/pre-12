@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'features/onboarding/register_validation.dart';
 import 'features/auth/auth_controller.dart';
+import 'features/auth/auth_service.dart';
 import 'features/auth/models.dart';
 import 'profile_setup_screen.dart';
 
@@ -21,6 +22,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   bool _showPassword = false;
   bool _isSubmitting = false;
+  String? _submitError;
 
   @override
   void dispose() {
@@ -49,9 +51,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     _signUp();
   }
 
+  void _handleFieldChanged() {
+    setState(() {
+      _submitError = null;
+    });
+  }
+
   Future<void> _signUp() async {
     if (_isSubmitting) return;
-    setState(() => _isSubmitting = true);
+    setState(() {
+      _isSubmitting = true;
+      _submitError = null;
+    });
 
     try {
       final result = await ref
@@ -76,9 +87,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('新規登録に失敗しました: $e')));
+      final message = e is SignUpException
+          ? e.userMessage
+          : '新規登録に失敗しました。通信状況を確認して再度お試しください。';
+      setState(() {
+        _submitError = message;
+      });
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -108,6 +122,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
+                if (_submitError != null) ...[
+                  Text(
+                    _submitError!,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                ],
                 const Text(
                   'P2HAC.KSに参加してレビュー・アップロードを始めましょう',
                   style: TextStyle(fontSize: 14, color: Colors.grey),
@@ -136,7 +161,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     prefixIcon: Icon(Icons.person),
                   ),
                   validator: RegisterValidation.usernameFieldError,
-                  onChanged: (_) => setState(() {}),
+                  onChanged: (_) => _handleFieldChanged(),
                 ),
 
                 const SizedBox(height: 16),
@@ -157,7 +182,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     prefixIcon: Icon(Icons.email),
                   ),
                   validator: RegisterValidation.emailFieldError,
-                  onChanged: (_) => setState(() {}),
+                  onChanged: (_) => _handleFieldChanged(),
                 ),
 
                 const SizedBox(height: 16),
@@ -191,7 +216,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     ),
                   ),
                   validator: RegisterValidation.passwordFieldError,
-                  onChanged: (_) => setState(() {}),
+                  onChanged: (_) => _handleFieldChanged(),
                 ),
 
                 const SizedBox(height: 24),
