@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'features/onboarding/register_validation.dart';
 import 'features/auth/auth_controller.dart';
+import 'features/auth/auth_service.dart';
 import 'features/auth/models.dart';
 import 'profile_setup_screen.dart';
 
@@ -86,8 +87,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       );
     } catch (e) {
       if (!mounted) return;
+      final message = e is SignUpException
+          ? e.userMessage
+          : '新規登録に失敗しました。通信状況を確認して再度お試しください。';
       setState(() {
-        _submitError = '新規登録に失敗しました。通信状況を確認して再度お試しください。';
+        _submitError = message;
       });
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
