@@ -5,7 +5,6 @@ import 'features/auth/auth_controller.dart';
 import 'features/auth/login_page.dart';
 import 'features/home/home_page.dart';
 import 'features/onboarding/first_launch.dart';
-import 'register_screen.dart';
 
 class App extends ConsumerWidget {
   const App({super.key});
@@ -23,9 +22,10 @@ class App extends ConsumerWidget {
       home: auth.user == null
           ? isFirstLaunchAsync.when(
               data: (isFirstLaunch) {
-                if (isFirstLaunch) {
-                  return const RegisterScreen();
-                }
+                // アプリ起動時は常にログイン画面を表示
+                // if (isFirstLaunch) {
+                //   return const RegisterScreen();
+                // }
                 return const LoginPage();
               },
               loading: () => const Scaffold(

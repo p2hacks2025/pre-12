@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../onboarding/register_validation.dart';
+import '../../register_screen.dart';
 import 'auth_controller.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
@@ -134,6 +135,35 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             ),
                           )
                         : const Text('ログイン'),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                // 新規登録リンク
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const RegisterScreen(),
+                        ),
+                      );
+                    },
+                    child: RichText(
+                      text: TextSpan(
+                        style: const TextStyle(color: Colors.black87),
+                        children: [
+                          const TextSpan(text: 'アカウントをお持ちではありませんか？ '),
+                          TextSpan(
+                            text: '新規登録',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ],
