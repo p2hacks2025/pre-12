@@ -43,10 +43,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final state = ref.watch(authControllerProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: const Text('ログイン'),
-      ),
+      appBar: AppBar(automaticallyImplyLeading: false),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
