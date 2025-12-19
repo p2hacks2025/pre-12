@@ -23,3 +23,31 @@ class UserProfile {
     );
   }
 }
+
+class MyWork {
+  const MyWork({
+    required this.id,
+    required this.imageUrl,
+    required this.title,
+    required this.description,
+    required this.createdAt,
+  });
+
+  final String id;
+  final String imageUrl;
+  final String title;
+  final String description;
+  final DateTime createdAt;
+
+  factory MyWork.fromJson(Map<String, dynamic> json) {
+    return MyWork(
+      id: (json['id'] ?? '').toString(),
+      imageUrl: (json['image_url'] ?? '').toString(),
+      title: (json['title'] ?? '').toString(),
+      description: (json['description'] ?? '').toString(),
+      createdAt:
+          DateTime.tryParse((json['created_at'] ?? '').toString()) ??
+          DateTime.fromMillisecondsSinceEpoch(0),
+    );
+  }
+}
