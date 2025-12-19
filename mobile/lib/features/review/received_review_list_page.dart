@@ -3,31 +3,30 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../accept_review_screen.dart';
 import 'review_service.dart';
 
-class AcceptedReviewListPage extends ConsumerStatefulWidget {
-  const AcceptedReviewListPage({super.key});
+class ReceivedReviewListPage extends ConsumerStatefulWidget {
+  const ReceivedReviewListPage({super.key});
 
   @override
-  ConsumerState<AcceptedReviewListPage> createState() =>
-      _AcceptedReviewListPageState();
+  ConsumerState<ReceivedReviewListPage> createState() =>
+      _ReceivedReviewListPageState();
 }
 
-class _AcceptedReviewListPageState
-    extends ConsumerState<AcceptedReviewListPage> {
+class _ReceivedReviewListPageState
+    extends ConsumerState<ReceivedReviewListPage> {
   @override
   void initState() {
     super.initState();
-    // ページ読み込み時に承認済みレビューを取得
+    // ページ読み込み時に受信レビューを取得
     Future.microtask(
-      () => ref.read(reviewServiceProvider).fetchAcceptedReviews(),
+      () => ref.read(reviewServiceProvider).fetchReceivedReviews(),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final reviews = ref.watch(acceptedReviewsProvider);
+    final reviews = ref.watch(receivedReviewsProvider);
 
     return Scaffold(
-      //appBar: AppBar(title: const Text('承認済みレビュー'), elevation: 0),
       body: reviews.when(
         data: (reviewList) {
           if (reviewList.isEmpty) {
@@ -38,7 +37,7 @@ class _AcceptedReviewListPageState
                   Icon(Icons.inbox_outlined, size: 64, color: Colors.grey),
                   SizedBox(height: 16),
                   Text(
-                    'まだ承認済みレビューがありません',
+                    '受信レビューがまだありません',
                     style: TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                 ],
@@ -48,7 +47,7 @@ class _AcceptedReviewListPageState
 
           return RefreshIndicator(
             onRefresh: () async {
-              await ref.read(reviewServiceProvider).fetchAcceptedReviews();
+              await ref.read(reviewServiceProvider).fetchReceivedReviews();
             },
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
@@ -80,7 +79,7 @@ class _AcceptedReviewListPageState
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
-                  ref.read(reviewServiceProvider).fetchAcceptedReviews();
+                  ref.read(reviewServiceProvider).fetchReceivedReviews();
                 },
                 child: const Text('再試行'),
               ),
@@ -93,7 +92,7 @@ class _AcceptedReviewListPageState
 }
 
 class _ReviewCard extends StatelessWidget {
-  final AcceptedReview review;
+  final ReceivedReview review;
 
   const _ReviewCard({required this.review});
 
