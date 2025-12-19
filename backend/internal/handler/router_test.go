@@ -50,3 +50,7 @@ func withPostWork(r *gin.Engine) {
 func withUpdateProfile(r *gin.Engine) {
 	r.POST("/update-profile", UpdateMyProfile)
 }
+
+func withMyWorks(r *gin.Engine) {
+	r.GET("/my-works", GetMyWorks)
+}
