@@ -77,18 +77,29 @@ class ProfileController extends StateNotifier<ProfileState> {
 
     state = state.copyWith(
       isLoading: true,
+      isLoadingWorks: true,
       clearError: true,
     );
     try {
-      final profile = await _service.getMyProfile(userId: user.id);
+      final results = await Future.wait([
+        _service.getMyProfile(userId: user.id),
+        _service.getMyWorks(userId: user.id),
+      ]);
+      final profile = results[0] as UserProfile?;
+      final works = results[1] as List<MyWork>;
 
       state = state.copyWith(
         isLoading: false,
+        isLoadingWorks: false,
         profile: profile,
-        myWorks: const <MyWork>[],
+        myWorks: works,
       );
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(
+        isLoading: false,
+        isLoadingWorks: false,
+        error: e.toString(),
+      );
     }
   }
 
