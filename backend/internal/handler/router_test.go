@@ -46,3 +46,7 @@ func withMatches(r *gin.Engine) {
 func withPostWork(r *gin.Engine) {
 	r.POST("/work", PostWork)
 }
+
+func withUpdateProfile(r *gin.Engine) {
+	r.POST("/update-profile", UpdateMyProfile)
+}
