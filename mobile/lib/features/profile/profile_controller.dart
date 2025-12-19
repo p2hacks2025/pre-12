@@ -67,6 +67,8 @@ class ProfileController extends StateNotifier<ProfileState> {
     final user = _ref.read(authControllerProvider).user;
     if (user == null) {
       state = state.copyWith(
+        isLoading: false,
+        isLoadingWorks: false,
         profile: null,
         myWorks: const <MyWork>[],
         clearError: true,
