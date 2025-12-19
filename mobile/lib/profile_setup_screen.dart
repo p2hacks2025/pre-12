@@ -90,7 +90,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
       ref
           .read(authControllerProvider.notifier)
           .setLocalUser(
-            id: widget.username,
+            id: widget.userId,
             email: widget.email,
             displayName: displayName,
           );
