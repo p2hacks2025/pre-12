@@ -128,7 +128,7 @@ class _UploadArtworkPageState extends ConsumerState<UploadArtworkPage> {
         throw Exception('BACKEND_BASE_URL が不正です: $backendBaseUrl');
       }
 
-      final uri = base.resolve('/work');
+      final uri = base.resolve(uploadPath);
 
       Uint8List bytes;
       if (_fileBytes != null) {
