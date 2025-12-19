@@ -6,101 +6,101 @@ body:
 
 - type: markdown
   attributes:
-  value:  |
-  できるだけ再現手順を具体的に書いてください。スクショやログがあると助かります。
+    value: |
+      できるだけ再現手順を具体的に書いてください。スクショやログがあると助かります。
 
 - type: textarea
   id: summary
   attributes:
-  label: 概要
-  description: 何が起きているか（1〜2行で）
-  placeholder: 例）ログイン後、プロフィール画面でクラッシュする
+    label: 概要
+    description: 何が起きているか（1〜2行で）
+    placeholder: 例）ログイン後、プロフィール画面でクラッシュする
   validations:
-  required: true
+    required: true
 
 - type: textarea
   id: background
   attributes:
-  label: 背景 / 問題点
-  description: いつから・どの画面で・どの条件で起きるか
-  placeholder: |
-  - 発生条件:
-  - 発生頻度:
-  - 影響範囲:
+    label: 背景 / 問題点
+    description: いつから・どの画面で・どの条件で起きるか
+    placeholder: |
+      - 発生条件:
+      - 発生頻度:
+      - 影響範囲:
   validations:
-  required: false
+    required: false
 
 - type: textarea
   id: steps
   attributes:
-  label: 再現手順
-  description: 手順を番号付きで
-  placeholder: |
-  1.
-  2.
-  3.
+    label: 再現手順
+    description: 手順を番号付きで
+    placeholder: |
+      1.
+      2.
+      3.
   validations:
-  required: true
+    required: true
 
 - type: textarea
   id: expected
   attributes:
-  label: 期待する挙動
-  placeholder: 例）クラッシュせずにプロフィールが表示される
+    label: 期待する挙動
+    placeholder: 例）クラッシュせずにプロフィールが表示される
   validations:
-  required: true
+    required: true
 
 - type: textarea
   id: actual
   attributes:
-  label: 実際の挙動
-  placeholder: 例）画面遷移直後にクラッシュする
+    label: 実際の挙動
+    placeholder: 例）画面遷移直後にクラッシュする
   validations:
-  required: true
+    required: true
 
 - type: dropdown
   id: scope
   attributes:
-  label: 影響範囲
-  multiple: true
-  options:
-  - Frontend
-  - Backend
-  - Mobile
-  - Infra / CI
-  - Docs
-  - Others
+    label: 影響範囲
+    multiple: true
+    options:
+      - Frontend
+      - Backend
+      - Mobile
+      - Infra / CI
+      - Docs
+      - Others
   validations:
-  required: false
+    required: false
 
 - type: textarea
   id: env
   attributes:
-  label: 環境
-  description: OS / ブラウザ / 端末 / バージョンなど
-  placeholder: |
-  - OS:
-  - Browser:
-  - Device:
-  - App version / Commit:
+    label: 環境
+    description: OS / ブラウザ / 端末 / バージョンなど
+    placeholder: |
+      - OS:
+      - Browser:
+      - Device:
+      - App version / Commit:
   validations:
-  required: false
+    required: false
 
 - type: textarea
   id: evidence
   attributes:
-  label: ログ / スクリーンショット
-  description: あれば貼ってください（個人情報や秘匿情報は伏せる）
+    label: ログ / スクリーンショット
+    description: あれば貼ってください（個人情報や秘匿情報は伏せる）
   validations:
-  required: false
+    required: false
 
 - type: checkboxes
   id: checklist
   attributes:
-  label: 確認ポイント
-  options:
-  - label: 再現手順を第三者が追える形で書いた
-  - label: 期待する挙動と実際の挙動を書いた
-  - label: 可能ならログ/スクショを添付した
+    label: 確認ポイント
+    options:
+      - label: 再現手順を第三者が追える形で書いた
+      - label: 期待する挙動と実際の挙動を書いた
+      - label: 可能ならログ/スクショを添付した
 
 
