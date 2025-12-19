@@ -106,3 +106,26 @@ func createTestSwipe(t testing.TB, fromUserID, toWorkID, toWorkUserID string, is
 
 	return swipeID
 }
+
+func createTestMatch(t testing.TB, user1ID, user2ID, work1ID, work2ID string) string {
+	var matchID string
+	err := db.Pool.QueryRow(
+		context.Background(),
+		`
+		INSERT INTO public.matches (user1_id, user2_id, work1_id, work2_id)
+		VALUES ($1, $2, $3, $4)
+		RETURNING id
+		`,
+		user1ID, user2ID, work1ID, work2ID,
+	).Scan(&matchID)
+
+	if err != nil {
+		t.Fatalf("failed to create match: %v", err)
+	}
+
+	t.Cleanup(func() {
+		_, _ = db.Pool.Exec(context.Background(), "DELETE FROM public.matches WHERE id=$1", matchID)
+	})
+
+	return matchID
+}
