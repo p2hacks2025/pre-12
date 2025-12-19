@@ -1,31 +1,27 @@
 import 'dart:io';
 import 'dart:typed_data';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
-import 'package:mime/mime.dart';
 
-class UploadArtworkPage extends StatefulWidget {
+import 'config.dart';
+import 'features/auth/auth_controller.dart';
+
+class UploadArtworkPage extends ConsumerStatefulWidget {
   const UploadArtworkPage({super.key});
 
   @override
-  State<UploadArtworkPage> createState() => _UploadArtworkPageState();
+  ConsumerState<UploadArtworkPage> createState() => _UploadArtworkPageState();
 }
 
-class _UploadArtworkPageState extends State<UploadArtworkPage> {
+class _UploadArtworkPageState extends ConsumerState<UploadArtworkPage> {
   // ---- 設定（ここだけ変えればOK） ----
   static const int maxFileBytes = 10 * 1024 * 1024; // 10MB
   static const Set<String> allowedExt = {'jpg', 'jpeg', 'png'};
-  // バックエンドの作品作成API（JSON）
-  static const String uploadEndpoint =
-      'https://example.com/api/artworks'; // TODO: 自分のAPIへ
-  // 画像アップロードAPI（任意）。未設定(null/空)なら data URL を使います。
-  static const String? imageUploadEndpoint =
-      null; // 例: 'https://example.com/api/uploads'
-  // 送信ユーザーID（本来は認証から取得）
-  static const String userId = 'uuid';
+  // バックエンドの作品作成API（multipart/form-data）
+  static const String uploadPath = '/work';
   // ----------------------------------
 
   final _formKey = GlobalKey<FormState>();
@@ -116,24 +112,40 @@ class _UploadArtworkPageState extends State<UploadArtworkPage> {
     setState(() => _isSubmitting = true);
 
     try {
-      // 画像URLを用意（アップロードAPIが未設定なら data URL を生成）
-      final imageUrl = await _resolveImageUrl();
+      if (backendBaseUrl.trim().isEmpty) {
+        throw Exception('BACKEND_BASE_URL が未設定です');
+      }
 
-      final payload = {
-        'user_id': userId,
-        'image_url': imageUrl,
-        'title': _titleCtrl.text.trim(),
-        'description': _descCtrl.text.trim(),
-      };
+      final user = ref.read(authControllerProvider).user;
+      if (user == null) {
+        throw Exception('未ログインのため投稿できません');
+      }
 
-      final res = await http.post(
-        Uri.parse(uploadEndpoint),
-        headers: {
-          'Content-Type': 'application/json',
-          // 'Authorization': 'Bearer ...', // 必要なら
-        },
-        body: jsonEncode(payload),
+      final Uri base = Uri.parse(backendBaseUrl);
+      final uri = base.resolve(uploadPath);
+
+      final bytes = _fileBytes ??
+          (_filePath != null
+              ? await File(_filePath!).readAsBytes()
+              : Uint8List(0));
+      if (bytes.isEmpty) {
+        throw Exception('ファイルデータが取得できませんでした');
+      }
+
+      final req = http.MultipartRequest('POST', uri);
+      req.fields['user_id'] = user.id;
+      req.fields['title'] = _titleCtrl.text.trim();
+      req.fields['description'] = _descCtrl.text.trim();
+      req.files.add(
+        http.MultipartFile.fromBytes(
+          'image',
+          bytes,
+          filename: _fileName ?? 'upload.png',
+        ),
       );
+
+      final streamed = await req.send();
+      final res = await http.Response.fromStream(streamed);
 
       if (!mounted) return;
 
@@ -161,54 +173,6 @@ class _UploadArtworkPageState extends State<UploadArtworkPage> {
       ).showSnackBar(SnackBar(content: Text('通信エラー: $e')));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
-    }
-  }
-
-  // 画像URLを用意する
-  // - imageUploadEndpoint が設定されている: マルチパートでアップロード → 応答JSONの url/image_url を返す想定
-  // - 未設定: データURL(data:<mime>;base64,...) を返す（テスト用）
-  Future<String> _resolveImageUrl() async {
-    final filename = _fileName!;
-    final mime = lookupMimeType(filename) ?? 'application/octet-stream';
-
-    // バイト列を用意
-    Uint8List bytes;
-    if (_fileBytes != null) {
-      bytes = _fileBytes!;
-    } else if (_filePath != null) {
-      bytes = await File(_filePath!).readAsBytes();
-    } else {
-      throw Exception('ファイルデータが取得できませんでした。');
-    }
-
-    if (imageUploadEndpoint == null || imageUploadEndpoint!.isEmpty) {
-      // テスト用: データURLを返す
-      final b64 = base64Encode(bytes);
-      return 'data:$mime;base64,$b64';
-    }
-
-    // 実アップロード
-    final req = http.MultipartRequest('POST', Uri.parse(imageUploadEndpoint!));
-    req.files.add(
-      http.MultipartFile.fromBytes('file', bytes, filename: filename),
-    );
-    // 認証が必要ならここでヘッダーを追加
-    // req.headers['Authorization'] = 'Bearer ...';
-
-    final resp = await req.send();
-    final body = await resp.stream.bytesToString();
-    if (resp.statusCode >= 200 && resp.statusCode < 300) {
-      try {
-        final decoded = jsonDecode(body);
-        if (decoded is Map && decoded['image_url'] is String) {
-          return decoded['image_url'] as String;
-        } else if (decoded is Map && decoded['url'] is String) {
-          return decoded['url'] as String;
-        }
-      } catch (_) {}
-      throw Exception('画像アップロードの応答が不正です: $body');
-    } else {
-      throw Exception('画像アップロード失敗: ${resp.statusCode}\n$body');
     }
   }
 
