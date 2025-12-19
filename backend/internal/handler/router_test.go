@@ -1,3 +1,4 @@
+// backend/internal/handler/router_test.go
 package handler
 
 import "github.com/gin-gonic/gin"
@@ -24,4 +25,8 @@ func withMe(r *gin.Engine) {
 
 func withSwipe(r *gin.Engine) {
 	r.POST("/swipe", PostSwipe)
+}
+
+func withReview(r *gin.Engine) {
+	r.POST("/review", PostReview)
 }
