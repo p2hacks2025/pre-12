@@ -23,9 +23,6 @@ class App extends ConsumerWidget {
           ? isFirstLaunchAsync.when(
               data: (isFirstLaunch) {
                 // アプリ起動時は常にログイン画面を表示
-                // if (isFirstLaunch) {
-                //   return const RegisterScreen();
-                // }
                 return const LoginPage();
               },
               loading: () => const Scaffold(
