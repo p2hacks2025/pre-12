@@ -38,7 +38,7 @@ func GetReceivedReviews(c *gin.Context) {
 		  u.username,
 		  u.icon_path,
 		  w.id AS work_id,
-		  w.image_url AS work_image_path,
+		  w.image_path AS work_image_path,
 		  r.comment,
 		  r.created_at
 		FROM public.reviews r
