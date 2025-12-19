@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../review_screen.dart';
 import '../../upload.dart';
 import '../auth/auth_controller.dart';
-import '../profile/profile_edit_page.dart';
+import '../profile/profile_display_page.dart';
 import '../review/accepted_review_list_page.dart';
 import 'widgets/work_swipe_deck.dart';
 
@@ -27,7 +27,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       const ReviewListScreen(),
       const UploadArtworkPage(),
       const AcceptedReviewListPage(),
-      ProfileEditPage(
+      ProfileDisplayPage(
         onLogout: () => ref.read(authControllerProvider.notifier).logout(),
       ),
     ];

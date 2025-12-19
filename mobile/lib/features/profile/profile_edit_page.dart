@@ -8,9 +8,9 @@ import '../auth/auth_controller.dart';
 import 'profile_controller.dart';
 
 class ProfileEditPage extends ConsumerStatefulWidget {
-  const ProfileEditPage({super.key, required this.onLogout});
+  const ProfileEditPage({super.key, required this.onSave});
 
-  final VoidCallback onLogout;
+  final VoidCallback onSave;
 
   @override
   ConsumerState<ProfileEditPage> createState() => _ProfileEditPageState();
@@ -88,6 +88,10 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('保存しました')));
+      
+      // 保存後に前の画面に戻る
+      Navigator.of(context).pop();
+      widget.onSave();
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(
@@ -122,77 +126,78 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
           )
         : const CircleAvatar(radius: 44, child: Icon(Icons.person));
 
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Center(child: avatar),
-              const SizedBox(height: 12),
-              Center(
-                child: OutlinedButton.icon(
-                  onPressed: state.isLoading ? null : _pickIcon,
-                  icon: const Icon(Icons.photo),
-                  label: const Text('アイコンを変更'),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('プロフィール編集'),
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(child: avatar),
+                const SizedBox(height: 12),
+                Center(
+                  child: OutlinedButton.icon(
+                    onPressed: state.isLoading ? null : _pickIcon,
+                    icon: const Icon(Icons.photo),
+                    label: const Text('アイコンを変更'),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _usernameCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'ユーザー名',
-                  border: OutlineInputBorder(),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _usernameCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'ユーザー名',
+                    border: OutlineInputBorder(),
+                    enabled: false,
+                  ),
+                  textInputAction: TextInputAction.next,
+                  enabled: false,
+                  validator: (v) {
+                    final t = (v ?? '').trim();
+                    if (t.isEmpty) return 'ユーザー名を入力してください';
+                    if (t.length > 30) return 'ユーザー名は30文字以内にしてください';
+                    return null;
+                  },
                 ),
-                textInputAction: TextInputAction.next,
-                validator: (v) {
-                  final t = (v ?? '').trim();
-                  if (t.isEmpty) return 'ユーザー名を入力してください';
-                  if (t.length > 30) return 'ユーザー名は30文字以内にしてください';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _bioCtrl,
-                decoration: const InputDecoration(
-                  labelText: '自己紹介',
-                  border: OutlineInputBorder(),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _bioCtrl,
+                  decoration: const InputDecoration(
+                    labelText: '自己紹介',
+                    border: OutlineInputBorder(),
+                  ),
+                  minLines: 3,
+                  maxLines: 6,
+                  validator: (v) {
+                    final t = (v ?? '').trim();
+                    if (t.length > 300) return '自己紹介は300文字以内にしてください';
+                    return null;
+                  },
                 ),
-                minLines: 3,
-                maxLines: 6,
-                validator: (v) {
-                  final t = (v ?? '').trim();
-                  if (t.length > 300) return '自己紹介は300文字以内にしてください';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              FilledButton(
-                onPressed: state.isLoading ? null : _save,
-                child: state.isLoading
-                    ? const SizedBox(
-                        height: 18,
-                        width: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text('保存'),
-              ),
-              const SizedBox(height: 12),
-              if (state.error != null)
-                Text(
-                  state.error!,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                const SizedBox(height: 16),
+                FilledButton(
+                  onPressed: state.isLoading ? null : _save,
+                  child: state.isLoading
+                      ? const SizedBox(
+                          height: 18,
+                          width: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('保存'),
                 ),
-              const SizedBox(height: 12),
-              OutlinedButton.icon(
-                onPressed: widget.onLogout,
-                icon: const Icon(Icons.logout),
-                label: const Text('ログアウト'),
-              ),
-            ],
+                const SizedBox(height: 12),
+                if (state.error != null)
+                  Text(
+                    state.error!,
+                    style: TextStyle(color: Theme.of(context).colorScheme.error),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
