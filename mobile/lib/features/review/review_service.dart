@@ -1,8 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
 import 'package:p2hacks_onyx/features/auth/auth_controller.dart';
 import 'package:p2hacks_onyx/config.dart';
 
@@ -36,11 +39,25 @@ class ReceivedReview {
   });
 
   factory ReceivedReview.fromJson(Map<String, dynamic> json) {
+    final id = json['review_id'] as String? ?? json['id'] as String?;
+    final matchId = json['match_id'] as String?;
+    final userId = json['user_id'] as String?;
+    if (id == null || id.isEmpty) {
+      throw const FormatException('review_id is required');
+    }
+    if (matchId == null || matchId.isEmpty) {
+      throw const FormatException('match_id is required');
+    }
+    if (userId == null || userId.isEmpty) {
+      throw const FormatException('user_id is required');
+    }
     return ReceivedReview(
-      id: json['review_id'] as String? ?? json['id'] as String? ?? '',
-      matchId: json['match_id'] as String? ?? '',
-      userId: json['user_id'] as String? ?? '',
-      userName: json['username'] as String? ?? json['user_name'] as String? ?? 'Unknown User',
+      id: id,
+      matchId: matchId,
+      userId: userId,
+      userName: json['username'] as String? ??
+          json['user_name'] as String? ??
+          'Unknown User',
       iconUrl: json['icon_url'] as String? ?? '',
       comment: json['comment'] as String,
       workId: json['work_id'] as String?,
@@ -127,6 +144,22 @@ final reviewServiceProvider = Provider<ReviewService>((ref) {
   return ReviewService(ref);
 });
 
+String _friendlyErrorMessage(Object error) {
+  if (error is TimeoutException) {
+    return '通信がタイムアウトしました。時間をおいて再試行してください。';
+  }
+  if (error is SocketException) {
+    return 'ネットワークに接続できません。通信環境を確認してください。';
+  }
+  if (error is http.ClientException) {
+    return 'ネットワークエラーが発生しました。';
+  }
+  if (error is FormatException) {
+    return 'サーバーの応答形式が不正です。';
+  }
+  return '通信に失敗しました。時間をおいて再試行してください。';
+}
+
 class ReviewService {
   final Ref ref;
 
@@ -189,10 +222,22 @@ class ReviewService {
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-        final reviews = data
-            .map((json) => ReceivedReview.fromJson(json))
-            .toList();
+        final decoded = json.decode(response.body);
+        if (decoded is! List) {
+          throw const FormatException('Invalid reviews response');
+        }
+        final reviews = <ReceivedReview>[];
+        for (final entry in decoded) {
+          if (entry is! Map<String, dynamic>) {
+            debugPrint('Skipping review entry: invalid type');
+            continue;
+          }
+          try {
+            reviews.add(ReceivedReview.fromJson(entry));
+          } catch (e) {
+            debugPrint('Skipping review entry: $e');
+          }
+        }
 
         ref.read(receivedReviewsProvider.notifier).state = AsyncValue.data(
           reviews,
@@ -204,7 +249,7 @@ class ReviewService {
       }
     } catch (e, stack) {
       ref.read(receivedReviewsProvider.notifier).state = AsyncValue.error(
-        e,
+        Exception(_friendlyErrorMessage(e)),
         stack,
       );
     }

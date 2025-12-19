@@ -1,6 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
@@ -23,14 +26,38 @@ class MatchTarget {
   });
 
   factory MatchTarget.fromJson(Map<String, dynamic> json) {
+    final matchId = json['match_id'] as String?;
+    final userId = json['user_id'] as String?;
+    if (matchId == null || matchId.isEmpty) {
+      throw const FormatException('match_id is required');
+    }
+    if (userId == null || userId.isEmpty) {
+      throw const FormatException('user_id is required');
+    }
     return MatchTarget(
-      matchId: json['match_id'] as String? ?? '',
-      userId: json['user_id'] as String? ?? '',
+      matchId: matchId,
+      userId: userId,
       username: json['username'] as String? ?? '',
       iconUrl: json['icon_url'] as String? ?? '',
       workImageUrl: json['work_image_url'] as String? ?? '',
     );
   }
+}
+
+String _friendlyErrorMessage(Object error) {
+  if (error is TimeoutException) {
+    return '通信がタイムアウトしました。時間をおいて再試行してください。';
+  }
+  if (error is SocketException) {
+    return 'ネットワークに接続できません。通信環境を確認してください。';
+  }
+  if (error is http.ClientException) {
+    return 'ネットワークエラーが発生しました。';
+  }
+  if (error is FormatException) {
+    return 'サーバーの応答形式が不正です。';
+  }
+  return '通信に失敗しました。時間をおいて再試行してください。';
 }
 
 class ReviewListScreen extends ConsumerStatefulWidget {
@@ -98,14 +125,21 @@ class _ReviewListScreenState extends ConsumerState<ReviewListScreen> {
 
       final decoded = jsonDecode(res.body);
       if (decoded is! List) {
-        throw Exception('Invalid matches response');
+        throw const FormatException('Invalid matches response');
       }
 
-      final targets = decoded
-          .whereType<Map<String, dynamic>>()
-          .map(MatchTarget.fromJson)
-          .where((t) => t.matchId.isNotEmpty)
-          .toList(growable: false);
+      final targets = <MatchTarget>[];
+      for (final entry in decoded) {
+        if (entry is! Map<String, dynamic>) {
+          debugPrint('Skipping match entry: invalid type');
+          continue;
+        }
+        try {
+          targets.add(MatchTarget.fromJson(entry));
+        } catch (e) {
+          debugPrint('Skipping match entry: $e');
+        }
+      }
 
       if (!mounted) return;
       setState(() {
@@ -116,7 +150,7 @@ class _ReviewListScreenState extends ConsumerState<ReviewListScreen> {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
-        _error = e.toString();
+        _error = _friendlyErrorMessage(e);
       });
     }
   }
@@ -220,20 +254,12 @@ class _ReviewTargetCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 backgroundColor: Theme.of(context).primaryColor,
-                backgroundImage: target.iconUrl.isNotEmpty
-                    ? NetworkImage(target.iconUrl)
-                    : null,
-                child: target.iconUrl.isEmpty
-                    ? Text(
-                        target.username.isNotEmpty
-                            ? target.username[0].toUpperCase()
-                            : '?',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      )
-                    : null,
+                child: _AvatarContent(
+                  imageUrl: target.iconUrl,
+                  fallbackText: target.username.isNotEmpty
+                      ? target.username[0].toUpperCase()
+                      : '?',
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -295,6 +321,54 @@ class _WorkPreview extends StatelessWidget {
                   );
                 },
               ),
+      ),
+    );
+  }
+}
+
+class _AvatarContent extends StatelessWidget {
+  const _AvatarContent({
+    required this.imageUrl,
+    required this.fallbackText,
+  });
+
+  final String imageUrl;
+  final String fallbackText;
+
+  @override
+  Widget build(BuildContext context) {
+    if (imageUrl.isEmpty) {
+      return _AvatarFallback(text: fallbackText);
+    }
+
+    return ClipOval(
+      child: Image.network(
+        imageUrl,
+        width: 40,
+        height: 40,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return _AvatarFallback(text: fallbackText);
+        },
+      ),
+    );
+  }
+}
+
+class _AvatarFallback extends StatelessWidget {
+  const _AvatarFallback({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
@@ -392,7 +466,7 @@ class _ReviewExecutionScreenState extends ConsumerState<ReviewExecutionScreen> {
       if (!mounted) return;
       setState(() => _isSubmitting = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
+        SnackBar(content: Text(_friendlyErrorMessage(e))),
       );
     }
   }
