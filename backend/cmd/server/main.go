@@ -42,6 +42,8 @@ func main() {
 
 	r.GET("/me", handler.GetMyProfile)
 
+	r.GET("/my-works", handler.GetMyWorks)
+
 	r.POST("work", handler.PostWork)
 
 	r.GET("/works", handler.GetWorks)
