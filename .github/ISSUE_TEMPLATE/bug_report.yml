@@ -6,8 +6,7 @@ body:
 
 - type: markdown
   attributes:
-  value: |
-  できるだけ再現手順を具体的に書いてください。スクショやログがあると助かります。
+  value: できるだけ再現手順を具体的に書いてください。スクショやログがあると助かります。
 
 - type: textarea
   id: summary
@@ -102,4 +101,5 @@ body:
   - label: 再現手順を第三者が追える形で書いた
   - label: 期待する挙動と実際の挙動を書いた
   - label: 可能ならログ/スクショを添付した
+
 
