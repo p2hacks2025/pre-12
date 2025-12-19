@@ -121,20 +121,28 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       ),
                     ),
                   ),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: FilledButton(
-                    onPressed: state.isLoading ? null : _submit,
-                    child: state.isLoading
-                        ? SizedBox(
-                            height: 18,
-                            width: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Theme.of(context).colorScheme.onPrimary,
-                            ),
-                          )
-                        : const Text('ログイン'),
+                Center(
+                  child: SizedBox(
+                    width: 240,
+                    height: 48,
+                    child: FilledButton(
+                      onPressed: state.isLoading ? null : _submit,
+                      style: FilledButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: state.isLoading
+                          ? SizedBox(
+                              height: 18,
+                              width: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Theme.of(context).colorScheme.onPrimary,
+                              ),
+                            )
+                          : const Text('ログイン'),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 24),
