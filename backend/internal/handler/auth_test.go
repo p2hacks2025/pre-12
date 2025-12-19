@@ -1,3 +1,5 @@
+//backend/internal/handler/auth_test.go
+
 package handler
 
 import (
@@ -5,29 +7,17 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
-	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	"github.com/p2hacks2025/pre-12/backend/internal/db"
 )
 
 func TestLoginSuccess(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-
-	if err := godotenv.Load("../../.env"); err != nil {
-		log.Println(".env not found, relying on environment variables")
-	}
-
-	db.Init()
-
-	r := gin.Default()
-	r.POST("/sign-up", Signup)
-	r.POST("/login", Login)
+	// 必要な API だけを持つルーター
+	r := setupTestRouter(withSignup, withLogin)
 
 	// --- ユーザー作成 ---
 	email := fmt.Sprintf("login_test_%d@example.com", time.Now().UnixNano())
@@ -53,11 +43,8 @@ func TestLoginSuccess(t *testing.T) {
 	var signupResp struct {
 		UserID string `json:"user_id"`
 	}
-	if err := json.Unmarshal(wSignup.Body.Bytes(), &signupResp); err != nil {
-		t.Fatal("failed to parse signup response")
-	}
+	json.Unmarshal(wSignup.Body.Bytes(), &signupResp)
 
-	// cleanup
 	t.Cleanup(func() {
 		db.Pool.Exec(
 			context.Background(),
@@ -80,10 +67,6 @@ func TestLoginSuccess(t *testing.T) {
 	r.ServeHTTP(wLogin, reqLogin)
 
 	if wLogin.Code != http.StatusOK {
-		t.Fatalf(
-			"expected 200, got %d, body=%s",
-			wLogin.Code,
-			wLogin.Body.String(),
-		)
+		t.Fatalf("expected 200, got %d, body=%s", wLogin.Code, wLogin.Body.String())
 	}
 }

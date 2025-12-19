@@ -5,51 +5,19 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 	"time"
 
-	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	"github.com/p2hacks2025/pre-12/backend/internal/db"
 )
-
-/*
-TestMain
-- テスト全体で一度だけ実行
-- .env はあれば読む（必須にしない）
-- DB 初期化をここでまとめる
-*/
-func TestMain(m *testing.M) {
-	gin.SetMode(gin.TestMode)
-
-	if err := godotenv.Load("../../.env"); err != nil {
-		log.Println(".env not found, relying on environment variables")
-	}
-
-	db.Init()
-
-	code := m.Run()
-	os.Exit(code)
-}
-
-/*
-共通ルーターセットアップ
-*/
-func setupSignupRouter() *gin.Engine {
-	r := gin.Default()
-	r.POST("/sign-up", Signup)
-	return r
-}
 
 /*
 正常系：サインアップ成功 & cleanup
 */
 func TestSignupSuccessAndCleanup(t *testing.T) {
-	r := setupSignupRouter()
+	r := setupTestRouter(withSignup)
 
 	email := fmt.Sprintf("signup_test_%d@example.com", time.Now().UnixNano())
 
@@ -84,7 +52,6 @@ func TestSignupSuccessAndCleanup(t *testing.T) {
 		t.Fatal("user_id is empty")
 	}
 
-	// cleanup
 	t.Cleanup(func() {
 		if _, err := db.Pool.Exec(
 			context.Background(),
@@ -100,7 +67,7 @@ func TestSignupSuccessAndCleanup(t *testing.T) {
 異常系：メールアドレス重複
 */
 func TestSignupEmailAlreadyExists(t *testing.T) {
-	r := setupSignupRouter()
+	r := setupTestRouter(withSignup)
 
 	email := fmt.Sprintf("dup_signup_%d@example.com", time.Now().UnixNano())
 
@@ -110,7 +77,7 @@ func TestSignupEmailAlreadyExists(t *testing.T) {
 		Password: "password123",
 	}
 
-	// --- 1回目（成功させる） ---
+	// --- 1回目（成功） ---
 	b1, err := json.Marshal(body)
 	if err != nil {
 		t.Fatal(err)
