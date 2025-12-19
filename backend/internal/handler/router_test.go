@@ -21,3 +21,7 @@ func withLogin(r *gin.Engine) {
 func withMe(r *gin.Engine) {
 	r.GET("/me", GetMyProfile)
 }
+
+func withSwipe(r *gin.Engine) {
+	r.POST("/swipe", PostSwipe)
+}
