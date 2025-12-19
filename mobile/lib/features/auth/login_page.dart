@@ -115,7 +115,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Text(
                       state.error!,
-                      textAlign: TextAlign.right,
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.error,
                       ),

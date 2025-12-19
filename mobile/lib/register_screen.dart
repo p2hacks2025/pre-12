@@ -169,7 +169,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Text(
                       blockingReason,
-                      textAlign: TextAlign.right,
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.error,
                       ),
