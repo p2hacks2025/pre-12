@@ -6,7 +6,8 @@ body:
 
 - type: markdown
   attributes:
-  value: できるだけ再現手順を具体的に書いてください。スクショやログがあると助かります。
+  value:  |
+  できるだけ再現手順を具体的に書いてください。スクショやログがあると助かります。
 
 - type: textarea
   id: summary
