@@ -112,15 +112,9 @@ class _ProfileDisplayPageState extends ConsumerState<ProfileDisplayPage> {
                     ),
                     const SizedBox(height: 24),
                     // 自己紹介
-                    Container(
+                    // 自己紹介
+                    SizedBox(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Theme.of(context).colorScheme.outline,
-                        ),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
