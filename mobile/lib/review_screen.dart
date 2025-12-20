@@ -322,19 +322,22 @@ class _ReviewStatusTag extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final label = isReviewed ? 'レビュー済み' : '未レビュー';
-    final color = isReviewed ? Colors.grey : Colors.orange;
+    final borderColor =
+        isReviewed ? Colors.grey.shade700 : Colors.orange.shade700;
+    final backgroundColor =
+        isReviewed ? Colors.grey.shade200 : Colors.orange.shade100;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: backgroundColor,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color),
+        border: Border.all(color: borderColor),
       ),
       child: Text(
         label,
         style: TextStyle(
           fontSize: 12,
-          color: color,
+          color: borderColor,
           fontWeight: FontWeight.w600,
         ),
       ),
