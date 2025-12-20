@@ -285,7 +285,7 @@ class _ReviewTargetCard extends StatelessWidget {
                     Text(
                       target.workTitle.isNotEmpty
                           ? target.workTitle
-                          : 'レビュー待ち',
+                          : '作品',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey[600],
