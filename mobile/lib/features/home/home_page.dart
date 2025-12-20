@@ -17,6 +17,7 @@ class HomePage extends ConsumerStatefulWidget {
 
 class _HomePageState extends ConsumerState<HomePage> {
   int _index = 0;
+  static const double _navBarHeight = 80;
 
   void _handleLogout() {
     ref.read(authControllerProvider.notifier).logout();
@@ -49,10 +50,10 @@ class _HomePageState extends ConsumerState<HomePage> {
         onDestinationSelected: (value) {
           setState(() => _index = value);
         },
-        height: 80,
+        height: _navBarHeight,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         backgroundColor: Theme.of(context).colorScheme.surface,
-        indicatorColor: const Color(0xFFEDE3FF),
+        indicatorColor: _NavBarStyle.indicatorColor,
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.home_outlined),
@@ -89,6 +90,13 @@ class _PostNavIcon extends StatelessWidget {
   const _PostNavIcon({required this.isSelected});
 
   final bool isSelected;
+  static const double _iconSize = 30;
+  static const double _buttonSize = 52;
+  static const double _liftOffset = -10;
+  static const double _borderOpacity = 0.2;
+  static const double _shadowOpacity = 0.15;
+  static const double _shadowBlur = 12;
+  static const double _shadowOffsetY = 6;
 
   @override
   Widget build(BuildContext context) {
@@ -99,24 +107,32 @@ class _PostNavIcon extends StatelessWidget {
         isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.primary;
 
     return Transform.translate(
-      offset: const Offset(0, -10),
+      offset: const Offset(0, _liftOffset),
       child: Container(
-        width: 52,
-        height: 52,
+        width: _buttonSize,
+        height: _buttonSize,
         decoration: BoxDecoration(
           color: fillColor,
           shape: BoxShape.circle,
-          border: Border.all(color: theme.colorScheme.primary.withOpacity(0.2)),
+          border: Border.all(
+            color: theme.colorScheme.primary.withOpacity(_borderOpacity),
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.15),
-              blurRadius: 12,
-              offset: const Offset(0, 6),
+              color: Colors.black.withOpacity(_shadowOpacity),
+              blurRadius: _shadowBlur,
+              offset: const Offset(0, _shadowOffsetY),
             ),
           ],
         ),
-        child: Icon(Icons.add, size: 30, color: iconColor),
+        child: Icon(Icons.add, size: _iconSize, color: iconColor),
       ),
     );
   }
+}
+
+class _NavBarStyle {
+  const _NavBarStyle._();
+
+  static const Color indicatorColor = Color(0xFFEDE3FF);
 }
