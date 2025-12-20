@@ -1,3 +1,6 @@
+import 'dart:math';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,13 +9,56 @@ import '../works_controller.dart';
 import 'work_card.dart';
 import '../../../widgets/inline_error_banner.dart';
 
-class WorkSwipeDeck extends ConsumerWidget {
+class WorkSwipeDeck extends ConsumerStatefulWidget {
   const WorkSwipeDeck({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<WorkSwipeDeck> createState() => _WorkSwipeDeckState();
+}
+
+class _WorkSwipeDeckState extends ConsumerState<WorkSwipeDeck> {
+  Size _lastCardSize = Size.zero;
+  String? _lastPrefetchSignature;
+  bool _didScheduleInitialPrefetch = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_didScheduleInitialPrefetch) return;
+    _didScheduleInitialPrefetch = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _schedulePrefetch(ref.read(worksControllerProvider).works);
+    });
+  }
+
+  void _schedulePrefetch(List<Work> works) {
+    if (works.isEmpty || !_lastCardSize.isFinite) return;
+    final signature =
+        '${works.first.id}:${works.length}:${_lastCardSize.width.round()}x${_lastCardSize.height.round()}';
+    if (_lastPrefetchSignature == signature) return;
+    _lastPrefetchSignature = signature;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _prefetchWorks(context, works, _lastCardSize);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(worksControllerProvider);
     final error = state.error;
+
+    ref.listen<WorksState>(worksControllerProvider, (prev, next) {
+      if (!mounted || next.works.isEmpty) return;
+      final prevTopId =
+          prev?.works.isNotEmpty == true ? prev!.works.first.id : null;
+      final nextTopId = next.works.first.id;
+      if (prevTopId == nextTopId && prev?.works.length == next.works.length) {
+        return;
+      }
+      _schedulePrefetch(next.works);
+    });
 
     Widget withErrorBanner(Widget child) {
       if (error == null || error.isEmpty) return child;
@@ -61,6 +107,11 @@ class WorkSwipeDeck extends ConsumerWidget {
         padding: const EdgeInsets.all(16),
         child: LayoutBuilder(
           builder: (context, constraints) {
+            final cardSize = constraints.biggest;
+            if (cardSize.isFinite && _lastCardSize != cardSize) {
+              _lastCardSize = cardSize;
+            }
+
             return Stack(
               children: [
                 Positioned.fill(
@@ -95,6 +146,46 @@ class WorkSwipeDeck extends ConsumerWidget {
       ),
     );
   }
+}
+
+Future<void> _prefetchWorks(
+  BuildContext context,
+  List<Work> works,
+  Size cardSize, {
+  int ahead = 2,
+}) async {
+  if (works.isEmpty || !cardSize.isFinite) return;
+  final dpr = MediaQuery.devicePixelRatioOf(context);
+  final memCacheWidth = (cardSize.width * dpr).round().clamp(1, 16384) as int;
+  final memCacheHeight = (cardSize.height * dpr).round().clamp(1, 16384) as int;
+  final end = min(ahead, works.length);
+  for (var i = 0; i < end; i++) {
+    final provider =
+        _buildImageProvider(works[i].imageUrl, memCacheWidth, memCacheHeight);
+    if (provider == null) continue;
+    await precacheImage(provider, context);
+  }
+}
+
+ImageProvider? _buildImageProvider(
+  String rawUrl,
+  int memCacheWidth,
+  int memCacheHeight,
+) {
+  final src = rawUrl.trim();
+  if (src.isEmpty) return null;
+  if (src.startsWith('assets/')) {
+    return ResizeImage(
+      AssetImage(src),
+      width: memCacheWidth,
+      height: memCacheHeight,
+    );
+  }
+  return ResizeImage(
+    CachedNetworkImageProvider(src),
+    width: memCacheWidth,
+    height: memCacheHeight,
+  );
 }
 
 class _DismissibleTopCard extends ConsumerWidget {
