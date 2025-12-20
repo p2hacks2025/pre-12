@@ -131,27 +131,27 @@ SNS の一対多の拡散ではなく、「届くレビュー」を中心に設�
 <table>
   <tr>
     <td align="center">
-      <img src="image-1.png" alt="ホーム画面" width="160" />
+      <img src="image-1.png" alt="ホーム画面" width="165" />
       <br/>
       <b>ホーム画面</b>
     </td>
     <td align="center">
-      <img src="image-2.png" alt="レビュー作成" width="160" />
+      <img src="image-2.png" alt="レビュー作成" width="165" />
       <br/>
       <b>レビュー作成</b>
     </td>
     <td align="center">
-      <img src="image-4.png" alt="投稿" width="160" />
+      <img src="image-4.png" alt="投稿" width="165" />
       <br/>
       <b>投稿</b>
     </td>
     <td align="center">
-      <img src="image-5.png" alt="受け取ったレビュー" width="160" />
+      <img src="image-5.png" alt="受け取ったレビュー" width="165" />
       <br/>
       <b>受け取ったレビュー</b>
     </td>
     <td align="center">
-      <img src="image-3.png" alt="マイページ" width="160" />
+      <img src="image-3.png" alt="マイページ" width="165" />
       <br/>
       <b>マイページ</b>
     </td>
