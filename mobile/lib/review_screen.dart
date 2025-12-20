@@ -250,10 +250,12 @@ class _ReviewTargetCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Opacity(
         opacity: isEnabled ? 1 : 0.6,
-        child: Semantics(
-          button: true,
-          enabled: isEnabled,
-          child: InkWell(
+        child: ExcludeSemantics(
+          excluding: !isEnabled,
+          child: Semantics(
+            button: true,
+            enabled: isEnabled,
+            child: InkWell(
             onTap: isEnabled
                 ? () {
                     Navigator.push(
@@ -306,6 +308,7 @@ class _ReviewTargetCard extends StatelessWidget {
                   _WorkPreview(imageUrl: target.workImageUrl),
                 ],
               ),
+            ),
             ),
           ),
         ),
