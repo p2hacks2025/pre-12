@@ -30,4 +30,5 @@ func main() {
 	batch.UploadDefaultIcon()
 	batch.UploadIconsFromLocal()
 	batch.UploadWorksFromLocal()
+	batch.InsertDummySwipesAndMatches()
 }
