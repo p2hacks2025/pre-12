@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 
 import '../../config.dart';
+import '../../uri_helpers.dart';
 import 'models.dart';
 
 class AuthService {
@@ -32,7 +33,7 @@ class AuthService {
 
     final Uri uri;
     try {
-      uri = Uri.parse(_effectiveBaseUrl).resolve('/login');
+      uri = joinBasePath(Uri.parse(_effectiveBaseUrl), '/login');
     } catch (_) {
       throw Exception('BACKEND_BASE_URL が不正です: $_effectiveBaseUrl');
     }
@@ -81,7 +82,7 @@ class AuthService {
 
     final Uri uri;
     try {
-      uri = Uri.parse(_effectiveBaseUrl).resolve('/login');
+      uri = joinBasePath(Uri.parse(_effectiveBaseUrl), '/login');
     } catch (_) {
       throw Exception('BACKEND_BASE_URL が不正です: $_effectiveBaseUrl');
     }
@@ -122,7 +123,7 @@ class AuthService {
 
     final Uri uri;
     try {
-      uri = Uri.parse(_effectiveBaseUrl).resolve('/sign-up');
+      uri = joinBasePath(Uri.parse(_effectiveBaseUrl), '/sign-up');
     } catch (_) {
       throw Exception('BACKEND_BASE_URL が不正です: $_effectiveBaseUrl');
     }
