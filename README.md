@@ -131,16 +131,28 @@ SNS の一対多の拡散ではなく、「届くレビュー」を中心に設�
 <table>
   <tr>
     <td align="center">
+    ![alt text](image-1.png)
       <br/>
       <b>ホーム画面</b>
     </td>
     <td align="center">
-      <!-- <img src="docs/images/screenshot-2.png" alt="レビュー作成" width="250"/> -->
+      ![alt text](image-2.png)
       <br/>
       <b>レビュー作成</b>
     </td>
+    </td>
     <td align="center">
-      <!-- <img src="docs/images/screenshot-3.png" alt="プロフィール" width="250"/> -->
+      ![alt text](image-4.png)
+      <br/>
+      <b>投稿</b>
+    </td>
+    <td align="center">
+      ![alt text](image-5.png)
+      <br/>
+      <b>受け取ったレビュー</b>
+    </td>
+    <td align="center">
+    ![alt text](image-3.png)
       <br/>
       <b>マイページ</b>
     </td>
