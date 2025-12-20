@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../../config.dart';
+import '../../uri_helpers.dart';
 import 'models.dart';
 
 class WorksService {
@@ -23,8 +24,7 @@ class WorksService {
       throw Exception('BACKEND_BASE_URL が不正です: $backendBaseUrl');
     }
 
-    final uri = base
-        .resolve('/works')
+    final uri = joinBasePath(base, '/works')
         .replace(queryParameters: <String, String>{'user_id': userId});
 
     final client = _client ?? http.Client();
@@ -71,7 +71,7 @@ class WorksService {
       throw Exception('BACKEND_BASE_URL が不正です: $backendBaseUrl');
     }
 
-    final uri = base.resolve('/swipe');
+    final uri = joinBasePath(base, '/swipe');
     final client = _client ?? http.Client();
     try {
       final res = await client

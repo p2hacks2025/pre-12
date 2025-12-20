@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 
 import 'package:p2hacks_onyx/config.dart';
 import 'package:p2hacks_onyx/features/auth/auth_controller.dart';
+import 'package:p2hacks_onyx/uri_helpers.dart';
 import 'widgets/inline_error_banner.dart';
 
 class MatchTarget {
@@ -115,7 +116,8 @@ class _ReviewListScreenState extends ConsumerState<ReviewListScreen> {
     }
 
     final uri =
-        base.resolve('/matches').replace(queryParameters: {'user_id': user.id});
+      joinBasePath(base, '/matches')
+          .replace(queryParameters: {'user_id': user.id});
 
     try {
       final res = await http.get(uri).timeout(const Duration(seconds: 8));
@@ -447,7 +449,7 @@ class _ReviewExecutionScreenState extends ConsumerState<ReviewExecutionScreen> {
     try {
       final res = await http
           .post(
-            base.resolve('/review'),
+            joinBasePath(base, '/review'),
             headers: const {'content-type': 'application/json'},
             body: jsonEncode(<String, dynamic>{
               'match_id': widget.matchId,

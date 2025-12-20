@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:p2hacks_onyx/features/auth/auth_controller.dart';
 import 'package:p2hacks_onyx/config.dart';
+import 'package:p2hacks_onyx/uri_helpers.dart';
 
 // フロントのみでUIを確認したい場合は true にする
 const bool _useMockReceivedReviews = false;
@@ -207,8 +208,7 @@ class ReviewService {
       return;
     }
 
-    final uri = base
-        .resolve('/reviews')
+    final uri = joinBasePath(base, '/reviews')
         .replace(queryParameters: <String, String>{'user_id': user.id});
 
     try {
