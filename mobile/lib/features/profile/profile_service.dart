@@ -114,11 +114,28 @@ class ProfileService {
       }
 
       final decoded = jsonDecode(res.body);
-      if (decoded is! List) {
-        throw Exception('作品一覧取得の応答が不正です');
+      if (decoded == null) return const <MyWork>[];
+
+      List<dynamic> items;
+      if (decoded is List) {
+        items = decoded;
+      } else if (decoded is Map<String, dynamic>) {
+        if (decoded.containsKey('error')) {
+          throw Exception('作品一覧取得の応答にエラーが含まれています');
+        }
+        final works = decoded['works'] ?? decoded['data'];
+        if (works is List) {
+          items = works;
+        } else if (works == null || decoded.isEmpty) {
+          return const <MyWork>[];
+        } else {
+          throw Exception('作品一覧取得の応答に works/data がありません');
+        }
+      } else {
+        throw Exception('作品一覧取得の応答形式が不正です（List/Map ではありません）');
       }
 
-      return decoded
+      return items
           .whereType<Map<String, dynamic>>()
           .map(MyWork.fromJson)
           .where((w) => w.id.isNotEmpty)
