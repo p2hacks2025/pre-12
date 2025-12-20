@@ -126,7 +126,7 @@ class ProfileService {
         final works = decoded['works'] ?? decoded['data'];
         if (works is List) {
           items = works;
-        } else if (decoded.isEmpty) {
+        } else if (works == null || decoded.isEmpty) {
           return const <MyWork>[];
         } else {
           throw Exception('作品一覧取得の応答に works/data がありません');
