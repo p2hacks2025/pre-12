@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '../../config.dart';
@@ -22,13 +23,15 @@ class AuthService {
     required String email,
     required String password,
   }) async {
-    // backendが未完成な間は、URL未指定なら成功扱いにする。
     if (_effectiveBaseUrl.trim().isEmpty) {
-      await Future<void>.delayed(const Duration(milliseconds: 400));
-      final displayName = _guessDisplayName(email);
-      return AuthLoginResult(
-        user: AuthUser(id: email, email: email, displayName: displayName),
-      );
+      if (kDebugMode) {
+        await Future<void>.delayed(const Duration(milliseconds: 400));
+        final displayName = _guessDisplayName(email);
+        return AuthLoginResult(
+          user: AuthUser(id: email, email: email, displayName: displayName),
+        );
+      }
+      throw Exception('BACKEND_BASE_URL が未設定です');
     }
 
     final Uri uri;
@@ -76,8 +79,11 @@ class AuthService {
 
   Future<LoginResult> loginWithEmailPassword(LoginRequest request) async {
     if (_effectiveBaseUrl.trim().isEmpty) {
-      await Future<void>.delayed(const Duration(milliseconds: 400));
-      return LoginResult(userId: request.email);
+      if (kDebugMode) {
+        await Future<void>.delayed(const Duration(milliseconds: 400));
+        return LoginResult(userId: request.email);
+      }
+      throw Exception('BACKEND_BASE_URL が未設定です');
     }
 
     final Uri uri;
@@ -115,10 +121,12 @@ class AuthService {
   }
 
   Future<SignUpResult> signUp(SignUpRequest request) async {
-    // backendが未完成な間は、URL未指定なら成功扱いにする。
     if (_effectiveBaseUrl.trim().isEmpty) {
-      await Future<void>.delayed(const Duration(milliseconds: 400));
-      return SignUpResult(userId: request.username);
+      if (kDebugMode) {
+        await Future<void>.delayed(const Duration(milliseconds: 400));
+        return SignUpResult(userId: request.username);
+      }
+      throw SignUpException('BACKEND_BASE_URL が未設定です');
     }
 
     final Uri uri;
