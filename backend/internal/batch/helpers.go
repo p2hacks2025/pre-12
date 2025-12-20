@@ -2,6 +2,7 @@ package batch
 
 import (
 	"context"
+	"log"
 
 	"github.com/p2hacks2025/pre-12/backend/internal/db"
 )
@@ -33,4 +34,29 @@ func insertLike(ctx context.Context, fromUserID, toWorkID string) {
 		ON CONFLICT (from_user_id, to_work_id) DO UPDATE
 		SET is_like = true, created_at = now()
 	`, fromUserID, toWorkID)
+}
+
+func insertReview(
+	ctx context.Context,
+	matchID,
+	fromUserID,
+	toUserID,
+	workID,
+	comment string,
+) {
+	_, err := db.Pool.Exec(ctx, `
+		INSERT INTO public.reviews (
+			match_id,
+			from_user_id,
+			to_user_id,
+			work_id,
+			comment
+		)
+		VALUES ($1, $2, $3, $4, $5)
+		ON CONFLICT (match_id, from_user_id) DO NOTHING
+	`, matchID, fromUserID, toUserID, workID, comment)
+
+	if err != nil {
+		log.Println("failed to insert review:", err)
+	}
 }
