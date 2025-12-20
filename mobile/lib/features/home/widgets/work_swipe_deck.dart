@@ -9,11 +9,31 @@ import '../works_controller.dart';
 import 'work_card.dart';
 import '../../../widgets/inline_error_banner.dart';
 
-class WorkSwipeDeck extends ConsumerWidget {
+class WorkSwipeDeck extends ConsumerStatefulWidget {
   const WorkSwipeDeck({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<WorkSwipeDeck> createState() => _WorkSwipeDeckState();
+}
+
+class _WorkSwipeDeckState extends ConsumerState<WorkSwipeDeck> {
+  Size _lastCardSize = Size.zero;
+  String? _lastPrefetchSignature;
+
+  void _schedulePrefetch(List<Work> works, Size cardSize) {
+    if (works.isEmpty || !cardSize.isFinite) return;
+    final signature =
+        '${works.first.id}:${works.length}:${cardSize.width.round()}x${cardSize.height.round()}';
+    if (_lastPrefetchSignature == signature) return;
+    _lastPrefetchSignature = signature;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _prefetchWorks(context, works, cardSize);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(worksControllerProvider);
     final error = state.error;
 
@@ -65,28 +85,10 @@ class WorkSwipeDeck extends ConsumerWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final cardSize = constraints.biggest;
-
-            ref.listen<WorksState>(
-              worksControllerProvider,
-              (prev, next) {
-                if (next.works.isEmpty) return;
-                final prevTopId = prev?.works.isNotEmpty == true
-                    ? prev!.works.first.id
-                    : null;
-                final nextTopId = next.works.first.id;
-                if (prevTopId == nextTopId &&
-                    prev?.works.length == next.works.length) {
-                  return;
-                }
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  _prefetchWorks(context, next.works, cardSize);
-                });
-              },
-            );
-
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              _prefetchWorks(context, state.works, cardSize);
-            });
+            if (cardSize.isFinite && _lastCardSize != cardSize) {
+              _lastCardSize = cardSize;
+            }
+            _schedulePrefetch(state.works, cardSize);
 
             return Stack(
               children: [
