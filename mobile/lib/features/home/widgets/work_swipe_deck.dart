@@ -19,16 +19,28 @@ class WorkSwipeDeck extends ConsumerStatefulWidget {
 class _WorkSwipeDeckState extends ConsumerState<WorkSwipeDeck> {
   Size _lastCardSize = Size.zero;
   String? _lastPrefetchSignature;
+  bool _didScheduleInitialPrefetch = false;
 
-  void _schedulePrefetch(List<Work> works, Size cardSize) {
-    if (works.isEmpty || !cardSize.isFinite) return;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_didScheduleInitialPrefetch) return;
+    _didScheduleInitialPrefetch = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _schedulePrefetch(ref.read(worksControllerProvider).works);
+    });
+  }
+
+  void _schedulePrefetch(List<Work> works) {
+    if (works.isEmpty || !_lastCardSize.isFinite) return;
     final signature =
-        '${works.first.id}:${works.length}:${cardSize.width.round()}x${cardSize.height.round()}';
+        '${works.first.id}:${works.length}:${_lastCardSize.width.round()}x${_lastCardSize.height.round()}';
     if (_lastPrefetchSignature == signature) return;
     _lastPrefetchSignature = signature;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      _prefetchWorks(context, works, cardSize);
+      _prefetchWorks(context, works, _lastCardSize);
     });
   }
 
@@ -36,6 +48,17 @@ class _WorkSwipeDeckState extends ConsumerState<WorkSwipeDeck> {
   Widget build(BuildContext context) {
     final state = ref.watch(worksControllerProvider);
     final error = state.error;
+
+    ref.listen<WorksState>(worksControllerProvider, (prev, next) {
+      if (!mounted || next.works.isEmpty) return;
+      final prevTopId =
+          prev?.works.isNotEmpty == true ? prev!.works.first.id : null;
+      final nextTopId = next.works.first.id;
+      if (prevTopId == nextTopId && prev?.works.length == next.works.length) {
+        return;
+      }
+      _schedulePrefetch(next.works);
+    });
 
     Widget withErrorBanner(Widget child) {
       if (error == null || error.isEmpty) return child;
@@ -88,7 +111,6 @@ class _WorkSwipeDeckState extends ConsumerState<WorkSwipeDeck> {
             if (cardSize.isFinite && _lastCardSize != cardSize) {
               _lastCardSize = cardSize;
             }
-            _schedulePrefetch(state.works, cardSize);
 
             return Stack(
               children: [
