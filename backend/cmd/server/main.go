@@ -44,7 +44,7 @@ func main() {
 
 	r.GET("/my-works", handler.GetMyWorks)
 
-	r.POST("work", handler.PostWork)
+	r.POST("/work", handler.PostWork) // /workに修正
 
 	r.GET("/works", handler.GetWorks)
 
