@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '../../config.dart';
@@ -13,8 +14,11 @@ class WorksService {
 
   Future<List<Work>> getWorks({required String userId}) async {
     if (backendBaseUrl.trim().isEmpty) {
-      await Future<void>.delayed(const Duration(milliseconds: 250));
-      return _dummyWorks;
+      if (kDebugMode) {
+        await Future<void>.delayed(const Duration(milliseconds: 250));
+        return _dummyWorks;
+      }
+      throw Exception('BACKEND_BASE_URL が未設定です');
     }
 
     final Uri base;
