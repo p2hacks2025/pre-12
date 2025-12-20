@@ -1,6 +1,7 @@
 ## プロダクト名
 
 **Kiratto（キラット）**
+![alt text](image.png)
 
 ---
 
@@ -130,7 +131,6 @@ SNS の一対多の拡散ではなく、「届くレビュー」を中心に設�
 <table>
   <tr>
     <td align="center">
-      <!-- <img src="docs/images/screenshot-1.png" alt="ホーム画面" width="250"/> -->
       <br/>
       <b>ホーム画面</b>
     </td>
@@ -189,7 +189,7 @@ SNS の一対多の拡散ではなく、「届くレビュー」を中心に設�
 - **稼働の見える化**
   - 調整さんを作成し、各自の作業可能時間を共有
 - **GitHub Projects による一元管理**
-  - <a href= "https://github.com/orgs/p2hacks2025/projects/33"> バックログ<a>に全タスクを集約し、進捗・担当・目標を即確認可能に
+  - <a href= "https://github.com/orgs/p2hacks2025/projects/33"> バックログ</a>に全タスクを集約し、進捗・担当・目標を即確認可能に
 - **レビュー負荷の軽減**
   - Issue/PR テンプレートで状況共有を標準化
   - GitHub Copilot のレビューフォーマットも整備し修正サイクルを短縮
