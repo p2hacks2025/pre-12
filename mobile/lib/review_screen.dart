@@ -250,58 +250,62 @@ class _ReviewTargetCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Opacity(
         opacity: isEnabled ? 1 : 0.6,
-        child: InkWell(
-          onTap: isEnabled
-              ? () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ReviewExecutionScreen(
-                        matchId: target.matchId,
-                        artworkImageUrl: target.workImageUrl,
-                        artworkTitle: target.workTitle.isNotEmpty
-                            ? target.workTitle
-                            : '作品',
-                        artistName: target.username,
-                      ),
-                    ),
-                  );
-                }
-              : null,
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  backgroundColor: Theme.of(context).primaryColor,
-                  child: _AvatarContent(
-                    imageUrl: target.iconUrl,
-                    fallbackText: target.username.isNotEmpty
-                        ? target.username[0].toUpperCase()
-                        : '?',
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        target.username,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+        child: Semantics(
+          button: true,
+          enabled: isEnabled,
+          child: InkWell(
+            onTap: isEnabled
+                ? () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ReviewExecutionScreen(
+                          matchId: target.matchId,
+                          artworkImageUrl: target.workImageUrl,
+                          artworkTitle: target.workTitle.isNotEmpty
+                              ? target.workTitle
+                              : '作品',
+                          artistName: target.username,
                         ),
                       ),
-                      const SizedBox(height: 6),
-                      _ReviewStatusTag(isReviewed: target.isReviewed),
-                    ],
+                    );
+                  }
+                : null,
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    backgroundColor: Theme.of(context).primaryColor,
+                    child: _AvatarContent(
+                      imageUrl: target.iconUrl,
+                      fallbackText: target.username.isNotEmpty
+                          ? target.username[0].toUpperCase()
+                          : '?',
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                _WorkPreview(imageUrl: target.workImageUrl),
-              ],
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          target.username,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        _ReviewStatusTag(isReviewed: target.isReviewed),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  _WorkPreview(imageUrl: target.workImageUrl),
+                ],
+              ),
             ),
           ),
         ),
