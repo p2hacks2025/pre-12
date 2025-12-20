@@ -60,12 +60,12 @@ String _friendlyErrorMessage(Object error) {
     return 'ネットワークに接続できません。通信環境を確認してください。';
   }
   if (error is http.ClientException) {
-    return 'ネットワークエラーが発生しました。';
+    return '通信エラーが発生しました。時間をおいて再試行してください。';
   }
   if (error is FormatException) {
-    return 'サーバーの応答形式が不正です。';
+    return 'サーバーの応答が不正です。時間をおいて再試行してください。';
   }
-  return '通信に失敗しました。時間をおいて再試行してください。';
+  return '現在サービスに接続できません。時間をおいて再試行してください。';
 }
 
 class ReviewListScreen extends ConsumerStatefulWidget {
@@ -105,7 +105,7 @@ class _ReviewListScreenState extends ConsumerState<ReviewListScreen> {
     if (user == null) {
       setState(() {
         _isLoading = false;
-        _error = '未ログインのためレビュー対象を取得できません';
+        _error = 'ログインが必要です。再度ログインしてください。';
       });
       return;
     }
@@ -497,7 +497,7 @@ class _ReviewExecutionScreenState extends ConsumerState<ReviewExecutionScreen> {
     final user = ref.read(authControllerProvider).user;
     if (user == null) {
       setState(() {
-        _submitError = '未ログインのため送信できません。';
+        _submitError = 'ログインが必要です。再度ログインしてください。';
       });
       return;
     }
@@ -531,7 +531,12 @@ class _ReviewExecutionScreenState extends ConsumerState<ReviewExecutionScreen> {
           .timeout(const Duration(seconds: 8));
 
       if (res.statusCode < 200 || res.statusCode >= 300) {
-        throw Exception('レビュー送信に失敗しました: ${res.statusCode}');
+        if (!mounted) return;
+        setState(() {
+          _isSubmitting = false;
+          _submitError = 'レビューの送信に失敗しました。時間をおいて再試行してください。';
+        });
+        return;
       }
 
       if (!mounted) return;
@@ -540,11 +545,11 @@ class _ReviewExecutionScreenState extends ConsumerState<ReviewExecutionScreen> {
         const SnackBar(content: Text('レビューを送信しました')),
       );
       Navigator.pop(context);
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
       setState(() {
         _isSubmitting = false;
-        _submitError = _friendlyErrorMessage(e);
+        _submitError = 'レビューの送信に失敗しました。時間をおいて再試行してください。';
       });
     }
   }

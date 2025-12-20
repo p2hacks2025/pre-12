@@ -72,7 +72,12 @@ class WorksController extends StateNotifier<WorksState> {
   Future<void> swipe({required Work work, required bool isLike}) async {
     final auth = _ref.read(authControllerProvider);
     final user = auth.user;
-    if (user == null) return;
+    if (user == null) {
+      state = state.copyWith(
+        error: 'ログインが必要です。再度ログインしてください。',
+      );
+      return;
+    }
 
     // 先にUIを進める
     state = state.copyWith(
@@ -85,9 +90,13 @@ class WorksController extends StateNotifier<WorksState> {
         toWorkId: work.id,
         isLike: isLike,
       );
-    } catch (e) {
+    } catch (_) {
       // 送信失敗はUX優先で復元せず、エラーだけ出す
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(
+        error: isLike
+            ? 'いいねの送信に失敗しました。時間をおいて再試行してください。'
+            : 'スキップの送信に失敗しました。時間をおいて再試行してください。',
+      );
     }
   }
 }

@@ -154,12 +154,12 @@ String _friendlyErrorMessage(Object error) {
     return 'ネットワークに接続できません。通信環境を確認してください。';
   }
   if (error is http.ClientException) {
-    return 'ネットワークエラーが発生しました。';
+    return '通信エラーが発生しました。時間をおいて再試行してください。';
   }
   if (error is FormatException) {
-    return 'サーバーの応答形式が不正です。';
+    return 'サーバーの応答が不正です。時間をおいて再試行してください。';
   }
-  return '通信に失敗しました。時間をおいて再試行してください。';
+  return '現在サービスに接続できません。時間をおいて再試行してください。';
 }
 
 class ReviewService {
@@ -183,7 +183,7 @@ class ReviewService {
 
     if (backendBaseUrl.trim().isEmpty) {
       ref.read(receivedReviewsProvider.notifier).state = AsyncValue.error(
-        Exception('BACKEND_BASE_URL が未設定です'),
+        'BACKEND_BASE_URL が未設定です',
         StackTrace.current,
       );
       return;
@@ -192,7 +192,7 @@ class ReviewService {
     final user = ref.read(authControllerProvider).user;
     if (user == null) {
       ref.read(receivedReviewsProvider.notifier).state = AsyncValue.error(
-        Exception('未ログインのためレビューを取得できません'),
+        'ログインが必要です。再度ログインしてください。',
         StackTrace.current,
       );
       return;
@@ -203,7 +203,7 @@ class ReviewService {
       base = Uri.parse(backendBaseUrl);
     } catch (_) {
       ref.read(receivedReviewsProvider.notifier).state = AsyncValue.error(
-        Exception('BACKEND_BASE_URL が不正です: $backendBaseUrl'),
+        'BACKEND_BASE_URL が不正です: $backendBaseUrl',
         StackTrace.current,
       );
       return;
@@ -254,7 +254,7 @@ class ReviewService {
       }
     } catch (e, stack) {
       ref.read(receivedReviewsProvider.notifier).state = AsyncValue.error(
-        Exception(_friendlyErrorMessage(e)),
+        _friendlyErrorMessage(e),
         stack,
       );
     }

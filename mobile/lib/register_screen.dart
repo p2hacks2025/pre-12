@@ -89,7 +89,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       if (!mounted) return;
       final message = e is SignUpException
           ? e.userMessage
-          : '新規登録に失敗しました。通信状況を確認して再度お試しください。';
+          : '現在サービスに接続できません。時間をおいて再試行してください。';
       setState(() {
         _submitError = message;
       });
