@@ -18,6 +18,8 @@ class MatchTarget {
   final String username;
   final String iconUrl;
   final String workImageUrl;
+  final String workTitle;
+  final bool isReviewed;
 
   const MatchTarget({
     required this.matchId,
@@ -25,6 +27,8 @@ class MatchTarget {
     required this.username,
     required this.iconUrl,
     required this.workImageUrl,
+    required this.workTitle,
+    required this.isReviewed,
   });
 
   factory MatchTarget.fromJson(Map<String, dynamic> json) {
@@ -42,6 +46,8 @@ class MatchTarget {
       username: json['username'] as String? ?? '',
       iconUrl: json['icon_url'] as String? ?? '',
       workImageUrl: json['work_image_url'] as String? ?? '',
+      workTitle: json['work_title'] as String? ?? '',
+      isReviewed: json['is_reviewed'] as bool? ?? false,
     );
   }
 }
@@ -144,6 +150,11 @@ class _ReviewListScreenState extends ConsumerState<ReviewListScreen> {
         }
       }
 
+      targets.sort((a, b) {
+        if (a.isReviewed == b.isReviewed) return 0;
+        return a.isReviewed ? 1 : -1;
+      });
+
       if (!mounted) return;
       setState(() {
         _isLoading = false;
@@ -232,65 +243,95 @@ class _ReviewTargetCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isEnabled = !target.isReviewed;
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ReviewExecutionScreen(
-                matchId: target.matchId,
-                artworkImageUrl: target.workImageUrl,
-                artworkTitle: '作品',
-                artistName: target.username,
-              ),
-            ),
-          );
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              CircleAvatar(
-                backgroundColor: Theme.of(context).primaryColor,
-                child: _AvatarContent(
-                  imageUrl: target.iconUrl,
-                  fallbackText: target.username.isNotEmpty
-                      ? target.username[0].toUpperCase()
-                      : '?',
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      target.username,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+      child: Opacity(
+        opacity: isEnabled ? 1 : 0.6,
+        child: InkWell(
+          onTap: isEnabled
+              ? () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ReviewExecutionScreen(
+                        matchId: target.matchId,
+                        artworkImageUrl: target.workImageUrl,
+                        artworkTitle: target.workTitle.isNotEmpty
+                            ? target.workTitle
+                            : '作品',
+                        artistName: target.username,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'レビュー待ち',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
+                  );
+                }
+              : null,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  backgroundColor: Theme.of(context).primaryColor,
+                  child: _AvatarContent(
+                    imageUrl: target.iconUrl,
+                    fallbackText: target.username.isNotEmpty
+                        ? target.username[0].toUpperCase()
+                        : '?',
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              _WorkPreview(imageUrl: target.workImageUrl),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        target.username,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      _ReviewStatusTag(isReviewed: target.isReviewed),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                _WorkPreview(imageUrl: target.workImageUrl),
+              ],
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ReviewStatusTag extends StatelessWidget {
+  const _ReviewStatusTag({required this.isReviewed});
+
+  final bool isReviewed;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = isReviewed ? 'レビュー済み' : '未レビュー';
+    final color = isReviewed ? Colors.grey : Colors.orange;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 12,
+          color: color,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
