@@ -18,6 +18,7 @@ class MatchTarget {
   final String username;
   final String iconUrl;
   final String workImageUrl;
+  final String workTitle;
 
   const MatchTarget({
     required this.matchId,
@@ -25,6 +26,7 @@ class MatchTarget {
     required this.username,
     required this.iconUrl,
     required this.workImageUrl,
+    required this.workTitle,
   });
 
   factory MatchTarget.fromJson(Map<String, dynamic> json) {
@@ -42,6 +44,7 @@ class MatchTarget {
       username: json['username'] as String? ?? '',
       iconUrl: json['icon_url'] as String? ?? '',
       workImageUrl: json['work_image_url'] as String? ?? '',
+      workTitle: json['work_title'] as String? ?? '',
     );
   }
 }
@@ -244,7 +247,9 @@ class _ReviewTargetCard extends StatelessWidget {
               builder: (context) => ReviewExecutionScreen(
                 matchId: target.matchId,
                 artworkImageUrl: target.workImageUrl,
-                artworkTitle: '作品',
+                artworkTitle: target.workTitle.isNotEmpty
+                    ? target.workTitle
+                    : '作品',
                 artistName: target.username,
               ),
             ),
@@ -278,7 +283,9 @@ class _ReviewTargetCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'レビュー待ち',
+                      target.workTitle.isNotEmpty
+                          ? target.workTitle
+                          : 'レビュー待ち',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey[600],
