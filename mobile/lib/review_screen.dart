@@ -404,12 +404,6 @@ class _ReviewExecutionScreenState extends ConsumerState<ReviewExecutionScreen> {
   bool _hasComment = false;
 
   @override
-  void initState() {
-    super.initState();
-    _hasComment = _commentController.text.trim().isNotEmpty;
-  }
-
-  @override
   void dispose() {
     _commentController.dispose();
     super.dispose();
@@ -612,21 +606,37 @@ class _ReviewExecutionScreenState extends ConsumerState<ReviewExecutionScreen> {
                       height: 50,
                       child: ElevatedButton(
                         onPressed: _isSubmitting ? null : _submitReview,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _hasComment
-                              ? Theme.of(context).colorScheme.primary
-                              : Theme.of(context)
-                                  .colorScheme
-                                  .primary
-                                  .withOpacity(0.4),
-                          foregroundColor: _hasComment
-                              ? Theme.of(context).colorScheme.onPrimary
-                              : Theme.of(context)
-                                  .colorScheme
-                                  .onPrimary
-                                  .withOpacity(0.8),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                        style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStateProperty.resolveWith<Color>(
+                            (states) {
+                              final primary =
+                                  Theme.of(context).colorScheme.primary;
+                              if (states.contains(MaterialState.disabled)) {
+                                return primary.withOpacity(0.3);
+                              }
+                              return _hasComment
+                                  ? primary
+                                  : primary.withOpacity(0.4);
+                            },
+                          ),
+                          foregroundColor:
+                              MaterialStateProperty.resolveWith<Color>(
+                            (states) {
+                              final onPrimary =
+                                  Theme.of(context).colorScheme.onPrimary;
+                              if (states.contains(MaterialState.disabled)) {
+                                return onPrimary.withOpacity(0.6);
+                              }
+                              return _hasComment
+                                  ? onPrimary
+                                  : onPrimary.withOpacity(0.8);
+                            },
+                          ),
+                          shape: MaterialStateProperty.all(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
                         ),
                         child: _isSubmitting
