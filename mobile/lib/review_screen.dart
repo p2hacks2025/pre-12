@@ -401,6 +401,13 @@ class _ReviewExecutionScreenState extends ConsumerState<ReviewExecutionScreen> {
   final _commentController = TextEditingController();
   bool _isSubmitting = false;
   String? _submitError;
+  bool _hasComment = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _hasComment = _commentController.text.trim().isNotEmpty;
+  }
 
   @override
   void dispose() {
@@ -578,10 +585,15 @@ class _ReviewExecutionScreenState extends ConsumerState<ReviewExecutionScreen> {
                       controller: _commentController,
                       maxLines: 8,
                       maxLength: 500,
-                      onChanged: (_) {
-                        if (_submitError != null) {
-                          setState(() => _submitError = null);
+                      onChanged: (value) {
+                        final hasComment = value.trim().isNotEmpty;
+                        if (_submitError == null && hasComment == _hasComment) {
+                          return;
                         }
+                        setState(() {
+                          _submitError = null;
+                          _hasComment = hasComment;
+                        });
                       },
                       decoration: InputDecoration(
                         hintText: 'この作品についてのフィードバックを入力してください...',
@@ -601,6 +613,18 @@ class _ReviewExecutionScreenState extends ConsumerState<ReviewExecutionScreen> {
                       child: ElevatedButton(
                         onPressed: _isSubmitting ? null : _submitReview,
                         style: ElevatedButton.styleFrom(
+                          backgroundColor: _hasComment
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context)
+                                  .colorScheme
+                                  .primary
+                                  .withOpacity(0.4),
+                          foregroundColor: _hasComment
+                              ? Theme.of(context).colorScheme.onPrimary
+                              : Theme.of(context)
+                                  .colorScheme
+                                  .onPrimary
+                                  .withOpacity(0.8),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
