@@ -49,6 +49,10 @@ class _HomePageState extends ConsumerState<HomePage> {
         onDestinationSelected: (value) {
           setState(() => _index = value);
         },
+        height: 80,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        indicatorColor: const Color(0xFFEDE3FF),
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.home_outlined),
@@ -61,8 +65,8 @@ class _HomePageState extends ConsumerState<HomePage> {
             label: 'レビューする',
           ),
           NavigationDestination(
-            icon: Icon(Icons.add_box_outlined),
-            selectedIcon: Icon(Icons.add_box),
+            icon: _PostNavIcon(isSelected: false),
+            selectedIcon: _PostNavIcon(isSelected: true),
             label: '投稿',
           ),
           NavigationDestination(
@@ -76,6 +80,42 @@ class _HomePageState extends ConsumerState<HomePage> {
             label: 'プロフィール',
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _PostNavIcon extends StatelessWidget {
+  const _PostNavIcon({required this.isSelected});
+
+  final bool isSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final fillColor =
+        isSelected ? theme.colorScheme.primary : theme.colorScheme.surface;
+    final iconColor =
+        isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.primary;
+
+    return Transform.translate(
+      offset: const Offset(0, -10),
+      child: Container(
+        width: 52,
+        height: 52,
+        decoration: BoxDecoration(
+          color: fillColor,
+          shape: BoxShape.circle,
+          border: Border.all(color: theme.colorScheme.primary.withOpacity(0.2)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Icon(Icons.add, size: 30, color: iconColor),
       ),
     );
   }
