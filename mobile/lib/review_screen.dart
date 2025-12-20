@@ -338,10 +338,9 @@ class _ReviewTargetCard extends StatelessWidget {
 }
 
 class _ReviewStatusTag extends StatelessWidget {
-  const _ReviewStatusTag({required this.isReviewed});
-
   final bool isReviewed;
 
+  const _ReviewStatusTag({required this.isReviewed});
   @override
   Widget build(BuildContext context) {
     final label = isReviewed ? 'レビュー済み' : '未レビュー';
