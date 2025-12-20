@@ -302,7 +302,7 @@ class _ReviewTargetCard extends StatelessWidget {
                 const SizedBox(width: 12),
                 _WorkPreview(imageUrl: target.workImageUrl),
               ],
-            ],
+            ),
           ),
         ),
       ),
