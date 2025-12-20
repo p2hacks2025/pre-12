@@ -1,3 +1,6 @@
+import 'dart:math';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -61,6 +64,30 @@ class WorkSwipeDeck extends ConsumerWidget {
         padding: const EdgeInsets.all(16),
         child: LayoutBuilder(
           builder: (context, constraints) {
+            final cardSize = constraints.biggest;
+
+            ref.listen<WorksState>(
+              worksControllerProvider,
+              (prev, next) {
+                if (next.works.isEmpty) return;
+                final prevTopId = prev?.works.isNotEmpty == true
+                    ? prev!.works.first.id
+                    : null;
+                final nextTopId = next.works.first.id;
+                if (prevTopId == nextTopId &&
+                    prev?.works.length == next.works.length) {
+                  return;
+                }
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  _prefetchWorks(context, next.works, cardSize);
+                });
+              },
+            );
+
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _prefetchWorks(context, state.works, cardSize);
+            });
+
             return Stack(
               children: [
                 Positioned.fill(
@@ -95,6 +122,46 @@ class WorkSwipeDeck extends ConsumerWidget {
       ),
     );
   }
+}
+
+Future<void> _prefetchWorks(
+  BuildContext context,
+  List<Work> works,
+  Size cardSize, {
+  int ahead = 2,
+}) async {
+  if (works.isEmpty || !cardSize.isFinite) return;
+  final dpr = MediaQuery.devicePixelRatioOf(context);
+  final memCacheWidth = (cardSize.width * dpr).round().clamp(1, 16384) as int;
+  final memCacheHeight = (cardSize.height * dpr).round().clamp(1, 16384) as int;
+  final end = min(ahead, works.length - 1);
+  for (var i = 0; i <= end; i++) {
+    final provider =
+        _buildImageProvider(works[i].imageUrl, memCacheWidth, memCacheHeight);
+    if (provider == null) continue;
+    await precacheImage(provider, context);
+  }
+}
+
+ImageProvider? _buildImageProvider(
+  String rawUrl,
+  int memCacheWidth,
+  int memCacheHeight,
+) {
+  final src = rawUrl.trim();
+  if (src.isEmpty) return null;
+  if (src.startsWith('assets/')) {
+    return ResizeImage(
+      AssetImage(src),
+      width: memCacheWidth,
+      height: memCacheHeight,
+    );
+  }
+  return ResizeImage(
+    CachedNetworkImageProvider(src),
+    width: memCacheWidth,
+    height: memCacheHeight,
+  );
 }
 
 class _DismissibleTopCard extends ConsumerWidget {
