@@ -4,8 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../review_screen.dart';
 import '../../upload.dart';
 import '../auth/auth_controller.dart';
+import '../auth/login_page.dart';
 import '../profile/profile_display_page.dart';
+import '../profile/profile_controller.dart';
 import '../review/received_review_list_page.dart';
+import '../review/review_service.dart';
 import 'widgets/work_swipe_deck.dart';
 
 class HomePage extends ConsumerStatefulWidget {
@@ -19,12 +22,6 @@ class _HomePageState extends ConsumerState<HomePage> {
   int _index = 0;
   static const double _navBarHeight = 80;
 
-  void _handleLogout() {
-    ref.read(authControllerProvider.notifier).logout();
-    if (!mounted) return;
-    Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
-  }
-
   @override
   Widget build(BuildContext context) {
     final titles = <String>['ホーム', 'レビューする', '投稿', '受信レビュー', 'プロフィール'];
@@ -34,7 +31,20 @@ class _HomePageState extends ConsumerState<HomePage> {
       const ReviewListScreen(),
       const UploadArtworkPage(),
       const ReceivedReviewListPage(),
-      ProfileDisplayPage(onLogout: _handleLogout),
+      ProfileDisplayPage(
+        onLogout: () {
+          ref.read(authControllerProvider.notifier).logout();
+          // 状態をリセット
+          ref.invalidate(authControllerProvider);
+          ref.invalidate(profileControllerProvider);
+          ref.invalidate(receivedReviewsProvider);
+
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const LoginPage()),
+            (route) => false,
+          );
+        },
+      ),
     ];
 
     return Scaffold(
