@@ -148,7 +148,7 @@ SNS の一対多の拡散ではなく、「届くレビュー」を中心に設�
     <td align="center">
       <img src="image-5.png" alt="受け取ったレビュー" width="165" />
       <br/>
-      <b>受け取ったレビュー</b>
+      <b><span style="white-space: nowrap;">受け取ったレビュー</span></b>
     </td>
     <td align="center">
       <img src="image-3.png" alt="マイページ" width="165" />
