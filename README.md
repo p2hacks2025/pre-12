@@ -1,7 +1,7 @@
 ## プロダクト名
 
 **Kiratto（キラット）**
-![alt text](image.png)
+![alt text](image-6.png)
 
 ---
 
