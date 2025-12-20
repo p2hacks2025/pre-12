@@ -31,14 +31,14 @@ class AuthService {
           user: AuthUser(id: email, email: email, displayName: displayName),
         );
       }
-      throw Exception('BACKEND_BASE_URL が未設定です');
+      throw AuthException('BACKEND_BASE_URL が未設定です');
     }
 
     final Uri uri;
     try {
       uri = joinBasePath(Uri.parse(_effectiveBaseUrl), '/login');
     } catch (_) {
-      throw Exception('BACKEND_BASE_URL が不正です: $_effectiveBaseUrl');
+      throw AuthException('BACKEND_BASE_URL が不正です: $_effectiveBaseUrl');
     }
 
     final client = _client ?? http.Client();
@@ -54,13 +54,16 @@ class AuthService {
           )
           .timeout(const Duration(seconds: 5));
 
+      if (res.statusCode == 401 || res.statusCode == 403) {
+        throw AuthException('メールアドレスまたはパスワードが違います。');
+      }
       if (res.statusCode < 200 || res.statusCode >= 300) {
-        throw Exception('ログイン失敗: ${res.statusCode} ${res.body}');
+        throw AuthException('現在サービスに接続できません。時間をおいて再試行してください。');
       }
 
       final decoded = jsonDecode(res.body);
       if (decoded is! Map || decoded['user_id'] is! String) {
-        throw Exception('ログイン応答が不正です: ${res.body}');
+        throw AuthException('サーバーの応答が不正です。時間をおいて再試行してください。');
       }
       final userId = decoded['user_id'] as String;
       return AuthLoginResult(
@@ -70,6 +73,16 @@ class AuthService {
           displayName: _guessDisplayName(email),
         ),
       );
+    } on AuthException {
+      rethrow;
+    } on TimeoutException catch (e) {
+      throw AuthException(_commonErrorMessage(e));
+    } on SocketException catch (e) {
+      throw AuthException(_commonErrorMessage(e));
+    } on http.ClientException catch (e) {
+      throw AuthException(_commonErrorMessage(e));
+    } on FormatException catch (e) {
+      throw AuthException(_commonErrorMessage(e));
     } finally {
       if (_client == null) {
         client.close();
@@ -83,14 +96,14 @@ class AuthService {
         await Future<void>.delayed(const Duration(milliseconds: 400));
         return LoginResult(userId: request.email);
       }
-      throw Exception('BACKEND_BASE_URL が未設定です');
+      throw AuthException('BACKEND_BASE_URL が未設定です');
     }
 
     final Uri uri;
     try {
       uri = joinBasePath(Uri.parse(_effectiveBaseUrl), '/login');
     } catch (_) {
-      throw Exception('BACKEND_BASE_URL が不正です: $_effectiveBaseUrl');
+      throw AuthException('BACKEND_BASE_URL が不正です: $_effectiveBaseUrl');
     }
 
     final client = _client ?? http.Client();
@@ -103,16 +116,29 @@ class AuthService {
           )
           .timeout(const Duration(seconds: 8));
 
+      if (res.statusCode == 401 || res.statusCode == 403) {
+        throw AuthException('メールアドレスまたはパスワードが違います。');
+      }
       if (res.statusCode < 200 || res.statusCode >= 300) {
-        throw Exception('ログイン失敗: ${res.statusCode} ${res.body}');
+        throw AuthException('現在サービスに接続できません。時間をおいて再試行してください。');
       }
 
       final decoded = jsonDecode(res.body);
       if (decoded is! Map<String, dynamic>) {
-        throw Exception('ログインの応答が不正です');
+        throw AuthException('サーバーの応答が不正です。時間をおいて再試行してください。');
       }
 
       return LoginResult.fromJson(decoded);
+    } on AuthException {
+      rethrow;
+    } on TimeoutException catch (e) {
+      throw AuthException(_commonErrorMessage(e));
+    } on SocketException catch (e) {
+      throw AuthException(_commonErrorMessage(e));
+    } on http.ClientException catch (e) {
+      throw AuthException(_commonErrorMessage(e));
+    } on FormatException catch (e) {
+      throw AuthException(_commonErrorMessage(e));
     } finally {
       if (_client == null) {
         client.close();
@@ -133,7 +159,7 @@ class AuthService {
     try {
       uri = joinBasePath(Uri.parse(_effectiveBaseUrl), '/sign-up');
     } catch (_) {
-      throw Exception('BACKEND_BASE_URL が不正です: $_effectiveBaseUrl');
+      throw SignUpException('BACKEND_BASE_URL が不正です: $_effectiveBaseUrl');
     }
 
     final client = _client ?? http.Client();
@@ -159,7 +185,7 @@ class AuthService {
       final decoded = jsonDecode(res.body);
       if (decoded is! Map<String, dynamic>) {
         throw SignUpException(
-          'サーバーの応答形式が不正です。',
+          'サーバーの応答が不正です。時間をおいて再試行してください。',
           statusCode: res.statusCode,
           serverMessage: res.body,
         );
@@ -169,7 +195,7 @@ class AuthService {
         return SignUpResult.fromJson(decoded);
       } catch (e) {
         throw SignUpException(
-          'サーバーの応答形式が不正です。',
+          'サーバーの応答が不正です。時間をおいて再試行してください。',
           statusCode: res.statusCode,
           serverMessage: res.body,
           cause: e,
@@ -187,12 +213,12 @@ class AuthService {
       );
     } on http.ClientException catch (e) {
       throw SignUpException(
-        'ネットワークエラーが発生しました。',
+        '通信エラーが発生しました。時間をおいて再試行してください。',
         cause: e,
       );
     } on FormatException catch (e) {
       throw SignUpException(
-        'サーバーの応答形式が不正です。',
+        'サーバーの応答が不正です。時間をおいて再試行してください。',
         cause: e,
       );
     } finally {
@@ -210,6 +236,15 @@ class AuthService {
   }
 }
 
+class AuthException implements Exception {
+  AuthException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => message;
+}
+
 class SignUpException implements Exception {
   SignUpException(
     this.userMessage, {
@@ -225,6 +260,22 @@ class SignUpException implements Exception {
 
   @override
   String toString() => userMessage;
+}
+
+String _commonErrorMessage(Object error) {
+  if (error is TimeoutException) {
+    return '通信がタイムアウトしました。時間をおいて再試行してください。';
+  }
+  if (error is SocketException) {
+    return 'ネットワークに接続できません。通信環境を確認してください。';
+  }
+  if (error is http.ClientException) {
+    return '通信エラーが発生しました。時間をおいて再試行してください。';
+  }
+  if (error is FormatException) {
+    return 'サーバーの応答が不正です。時間をおいて再試行してください。';
+  }
+  return '現在サービスに接続できません。時間をおいて再試行してください。';
 }
 
 String? _extractErrorMessage(String body) {
@@ -254,7 +305,7 @@ String _signupErrorMessage(int statusCode, String? serverError) {
       (normalized != null &&
           (normalized.contains('database error') ||
               normalized.contains('failed to create user')))) {
-    return 'サーバーで問題が発生しました。時間をおいて再度お試しください。';
+    return '現在サービスに接続できません。時間をおいて再試行してください。';
   }
-  return '新規登録に失敗しました。時間をおいて再度お試しください。';
+  return '現在サービスに接続できません。時間をおいて再試行してください。';
 }

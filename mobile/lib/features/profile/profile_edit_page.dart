@@ -66,7 +66,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
     final user = ref.read(authControllerProvider).user;
     if (user == null) {
       if (!mounted) return;
-      setState(() => _submitError = '未ログインです。');
+      setState(() => _submitError = 'ログインが必要です。再度ログインしてください。');
       return;
     }
 

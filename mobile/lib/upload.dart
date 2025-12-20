@@ -139,7 +139,7 @@ class _UploadArtworkPageState extends ConsumerState<UploadArtworkPage> {
       final authUser = ref.read(authControllerProvider).user;
       if (authUser == null) {
         setState(() {
-          _submitError = 'ログインしてください。';
+          _submitError = 'ログインが必要です。再度ログインしてください。';
         });
         return;
       }
