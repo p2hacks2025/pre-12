@@ -246,6 +246,7 @@ SNS の一対多の拡散ではなく、「届くレビュー」を中心に設�
 - GitHub（リポジトリ管理、Issues/Projects、Actions による CI）
 - Supabase Dashboard（DB/Storage 管理）
 - Gemini (UI の調整．手元でビルドができない際に，画像生成で UI の状態を確認する)
-- NotebookLM (仮スライド作成)
+- <a href= "https://notebooklm.google.com/notebook/f6c367f1-7edd-4726-b4ee-bff680cd1961"> NotebookLM/a>(仮スライド作成)
+
 - ChatGPT（プレゼン，ユーザーストーリーの作成のため，壁打ちに利用）
 - Notion(API 設計書の共有)
