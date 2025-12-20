@@ -208,8 +208,7 @@ class ReviewService {
       return;
     }
 
-    final uri = base
-        joinBasePath(base, '/reviews')
+    final uri = joinBasePath(base, '/reviews')
         .replace(queryParameters: <String, String>{'user_id': user.id});
 
     try {
