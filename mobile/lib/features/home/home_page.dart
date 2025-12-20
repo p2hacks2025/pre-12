@@ -108,24 +108,29 @@ class _PostNavIcon extends StatelessWidget {
 
     return Transform.translate(
       offset: const Offset(0, _liftOffset),
-      child: Container(
-        width: _buttonSize,
-        height: _buttonSize,
-        decoration: BoxDecoration(
-          color: fillColor,
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: theme.colorScheme.primary.withOpacity(_borderOpacity),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(_shadowOpacity),
-              blurRadius: _shadowBlur,
-              offset: const Offset(0, _shadowOffsetY),
+      child: Semantics(
+        label: '投稿',
+        selected: isSelected,
+        button: true,
+        child: Container(
+          width: _buttonSize,
+          height: _buttonSize,
+          decoration: BoxDecoration(
+            color: fillColor,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: theme.colorScheme.primary.withOpacity(_borderOpacity),
             ),
-          ],
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(_shadowOpacity),
+                blurRadius: _shadowBlur,
+                offset: const Offset(0, _shadowOffsetY),
+              ),
+            ],
+          ),
+          child: Icon(Icons.add, size: _iconSize, color: iconColor),
         ),
-        child: Icon(Icons.add, size: _iconSize, color: iconColor),
       ),
     );
   }
