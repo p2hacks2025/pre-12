@@ -121,7 +121,7 @@ class ProfileService {
         items = decoded;
       } else if (decoded is Map<String, dynamic>) {
         if (decoded.containsKey('error')) {
-          throw Exception('作品一覧取得の応答が不正です');
+          throw Exception('作品一覧取得の応答にエラーが含まれています');
         }
         final works = decoded['works'] ?? decoded['data'];
         if (works is List) {
@@ -129,10 +129,10 @@ class ProfileService {
         } else if (decoded.isEmpty) {
           return const <MyWork>[];
         } else {
-          throw Exception('作品一覧取得の応答が不正です');
+          throw Exception('作品一覧取得の応答に works/data がありません');
         }
       } else {
-        throw Exception('作品一覧取得の応答が不正です');
+        throw Exception('作品一覧取得の応答形式が不正です（List/Map ではありません）');
       }
 
       return items
