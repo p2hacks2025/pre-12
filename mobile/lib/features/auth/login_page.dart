@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../onboarding/register_validation.dart';
 import '../../register_screen.dart';
 import 'auth_controller.dart';
+import '../home/home_page.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -41,6 +42,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(authControllerProvider);
+    ref.listen<AuthState>(authControllerProvider, (previous, next) {
+      if (previous?.user == null && next.user != null && mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const HomePage()),
+          (route) => false,
+        );
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(automaticallyImplyLeading: false),
