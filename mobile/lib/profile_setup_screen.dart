@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'features/auth/auth_controller.dart';
 import 'features/home/home_page.dart';
 import 'features/onboarding/first_launch.dart';
+import 'features/profile/profile_controller.dart';
 import 'widgets/inline_error_banner.dart';
 
 class ProfileSetupScreen extends ConsumerStatefulWidget {
@@ -31,8 +32,15 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   final _bioCtrl = TextEditingController();
 
   Uint8List? _iconBytes;
+  XFile? _pickedFile;
   bool _isSubmitting = false;
   String? _submitError;
+
+  @override
+  void initState() {
+    super.initState();
+    _displayNameCtrl.text = widget.username;
+  }
 
   @override
   void dispose() {
@@ -72,6 +80,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
 
       setState(() {
         _iconBytes = bytes;
+        _pickedFile = xfile;
         _submitError = null;
       });
     } catch (e) {
@@ -101,6 +110,14 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
             id: widget.userId,
             email: widget.email,
             displayName: displayName,
+          );
+
+      await ref
+          .read(profileControllerProvider.notifier)
+          .update(
+            username: widget.username,
+            bio: _bioCtrl.text.trim(),
+            icon: _pickedFile,
           );
 
       if (!mounted) return;
@@ -195,7 +212,8 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _displayNameCtrl,
-                      enabled: !_isSubmitting,
+                      // username と一致させるため編集不可
+                      readOnly: true,
                       decoration: const InputDecoration(
                         hintText: '例：山田 太郎',
                         border: OutlineInputBorder(),
