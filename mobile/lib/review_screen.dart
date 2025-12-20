@@ -151,8 +151,11 @@ class _ReviewListScreenState extends ConsumerState<ReviewListScreen> {
       }
 
       targets.sort((a, b) {
-        if (a.isReviewed == b.isReviewed) return 0;
-        return a.isReviewed ? 1 : -1;
+        // まず未レビューを優先し、同じレビュー状態であれば matchId で安定ソートする
+        if (a.isReviewed != b.isReviewed) {
+          return a.isReviewed ? 1 : -1;
+        }
+        return a.matchId.compareTo(b.matchId);
       });
 
       if (!mounted) return;
