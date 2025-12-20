@@ -64,6 +64,10 @@ class WorksService {
     required String toWorkId,
     required bool isLike,
   }) async {
+    if (toWorkId.startsWith('dummy-')) {
+      return;
+    }
+
     if (backendBaseUrl.trim().isEmpty) {
       return;
     }
