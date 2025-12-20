@@ -50,6 +50,13 @@ func GetReceivedReviews(c *gin.Context) {
 		JOIN public.works w
 		  ON w.id = r.work_id
 		WHERE r.to_user_id = $1
+		  AND EXISTS (
+		    SELECT 1
+		    FROM public.reviews my
+		    WHERE my.match_id = r.match_id
+		      AND my.from_user_id = $1
+		      AND my.to_user_id = r.from_user_id
+		  )
 		ORDER BY r.created_at DESC
 	`, userID)
 

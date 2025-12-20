@@ -25,7 +25,10 @@ func TestGetReceivedReviewsSuccess(t *testing.T) {
 	// --- review 作成（A → B）---
 	_ = createTestReview(t, matchID, userA, userB, workB, "nice work!")
 
-	// --- API 呼び出し ---
+	// --- review 作成（B → A）← ★これを追加 ---
+	_ = createTestReview(t, matchID, userB, userA, workA, "thanks!")
+
+	// --- API 呼び出し（B が受信レビューを取得）---
 	req := httptest.NewRequest(http.MethodGet, "/reviews?user_id="+userB, nil)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
@@ -40,6 +43,7 @@ func TestGetReceivedReviewsSuccess(t *testing.T) {
 		t.Fatalf("failed to parse response: %v", err)
 	}
 
+	// ★ 相互レビュー成立 → 1件返る
 	if len(resp) != 1 {
 		t.Fatalf("expected 1 review, got %d", len(resp))
 	}
@@ -59,13 +63,9 @@ func TestGetReceivedReviewsSuccess(t *testing.T) {
 		t.Fatalf("unexpected comment: %s", review.Comment)
 	}
 
-	// URL が組み立てられているか
 	if review.IconURL == "" || review.WorkImageURL == "" {
 		t.Fatal("icon_url or work_image_url is empty")
 	}
-
-	// WorkTitle はテスト用に取得して比較（createTestWork で作成したタイトルを知っていればここで比較可能）
-	// ここでは簡単のため "test work" プレフィックスで存在確認
 	if review.WorkTitle == "" {
 		t.Fatal("work_title is empty")
 	}

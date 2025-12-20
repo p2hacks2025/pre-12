@@ -16,6 +16,7 @@ type MatchResponse struct {
 	IconURL      string `json:"icon_url"`
 	WorkImageURL string `json:"work_image_url"`
 	WorkTitle    string `json:"work_title"`
+	IsReviewed   bool   `json:"is_reviewed"`
 }
 
 func GetMatches(c *gin.Context) {
@@ -34,7 +35,13 @@ func GetMatches(c *gin.Context) {
 		  u.username,
 		  u.icon_path,
 		  w.image_path AS work_image_path,
-		  w.title AS work_title
+		  w.title AS work_title,
+		  EXISTS (
+		    SELECT 1
+		    FROM public.reviews r
+		    WHERE r.match_id = m.id
+		      AND r.from_user_id = $1
+		  ) AS is_reviewed
 		FROM public.matches m
 		JOIN public.users u
 		  ON u.id = CASE
@@ -61,6 +68,7 @@ func GetMatches(c *gin.Context) {
 	for rows.Next() {
 		var m MatchResponse
 		var iconPath, workPath *string
+
 		if err := rows.Scan(
 			&m.MatchID,
 			&m.UserID,
@@ -68,6 +76,7 @@ func GetMatches(c *gin.Context) {
 			&iconPath,
 			&workPath,
 			&m.WorkTitle,
+			&m.IsReviewed,
 		); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
