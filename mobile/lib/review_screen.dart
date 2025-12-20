@@ -282,7 +282,14 @@ class _ReviewTargetCard extends StatelessWidget {
                         ),
                       );
                       if (context.mounted) {
-                        await onReviewCompleted?.call();
+                        try {
+                          await onReviewCompleted?.call();
+                        } catch (e, stackTrace) {
+                          if (kDebugMode) {
+                            debugPrint('onReviewCompleted 実行中にエラーが発生しました: $e');
+                            debugPrint('$stackTrace');
+                          }
+                        }
                       }
                     }
                   : null,
