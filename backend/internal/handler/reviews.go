@@ -18,6 +18,7 @@ type ReceivedReviewResponse struct {
 	IconURL      string `json:"icon_url"`
 	WorkID       string `json:"work_id"`
 	WorkImageURL string `json:"work_image_url"`
+	WorkTitle    string `json:"work_title"`
 	Comment      string `json:"comment"`
 	CreatedAt    string `json:"created_at"`
 }
@@ -40,6 +41,7 @@ func GetReceivedReviews(c *gin.Context) {
 		  u.icon_path,
 		  w.id AS work_id,
 		  w.image_path AS work_image_path,
+		  w.title,
 		  r.comment,
 		  r.created_at
 		FROM public.reviews r
@@ -72,6 +74,7 @@ func GetReceivedReviews(c *gin.Context) {
 			&iconPath,
 			&r.WorkID,
 			&workPath,
+			&r.WorkTitle,
 			&r.Comment,
 			&createdAt,
 		); err != nil {
