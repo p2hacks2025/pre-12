@@ -6,8 +6,6 @@ import (
 	"context"
 	"net/http"
 
-	"strings"
-
 	"github.com/gin-gonic/gin"
 	"github.com/p2hacks2025/pre-12/backend/internal/db"
 )
@@ -26,8 +24,8 @@ func Login(c *gin.Context) {
 
 	var id, password string
 	err := db.Pool.QueryRow(context.Background(),
-		"SELECT id, password FROM public.users WHERE LOWER(email)=$1",
-		strings.ToLower(req.Email)).Scan(&id, &password)
+		"SELECT id, password FROM public.users WHERE email=$1",
+		req.Email).Scan(&id, &password)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "user not found"})
 		return

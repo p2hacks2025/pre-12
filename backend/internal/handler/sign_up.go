@@ -4,8 +4,6 @@ import (
 	"context"
 	"net/http"
 
-	"strings"
-
 	"github.com/gin-gonic/gin"
 	"github.com/p2hacks2025/pre-12/backend/internal/db"
 )
@@ -25,10 +23,9 @@ func Signup(c *gin.Context) {
 
 	// すでに同じメールアドレスがあるかチェック
 	var exists bool
-	emailLower := strings.ToLower(req.Email)
 	err := db.Pool.QueryRow(context.Background(),
-		"SELECT EXISTS(SELECT 1 FROM public.users WHERE LOWER(email)=$1)",
-		emailLower).Scan(&exists)
+		"SELECT EXISTS(SELECT 1 FROM public.users WHERE email=$1)",
+		req.Email).Scan(&exists)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "database error"})
 		return
@@ -42,7 +39,7 @@ func Signup(c *gin.Context) {
 	var id string
 	err = db.Pool.QueryRow(context.Background(),
 		"INSERT INTO public.users (username, email, password) VALUES ($1, $2, $3) RETURNING id",
-		req.Username, emailLower, req.Password).Scan(&id)
+		req.Username, req.Email, req.Password).Scan(&id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create user"})
 		return
