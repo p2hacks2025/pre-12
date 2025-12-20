@@ -158,8 +158,8 @@ Future<void> _prefetchWorks(
   final dpr = MediaQuery.devicePixelRatioOf(context);
   final memCacheWidth = (cardSize.width * dpr).round().clamp(1, 16384) as int;
   final memCacheHeight = (cardSize.height * dpr).round().clamp(1, 16384) as int;
-  final end = min(ahead, works.length - 1);
-  for (var i = 0; i <= end; i++) {
+  final end = min(ahead, works.length);
+  for (var i = 0; i < end; i++) {
     final provider =
         _buildImageProvider(works[i].imageUrl, memCacheWidth, memCacheHeight);
     if (provider == null) continue;
