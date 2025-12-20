@@ -76,6 +76,20 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
     final username = _usernameCtrl.text.trim();
     final bio = _bioCtrl.text.trim();
 
+    final profile = ref.read(profileControllerProvider).profile;
+    // 変更がない場合は送信しない
+    final isUsernameChanged = username != (profile?.username ?? '');
+    final isBioChanged = bio != (profile?.bio ?? '');
+    final isIconChanged = _pickedIcon != null;
+
+    if (!isUsernameChanged && !isBioChanged && !isIconChanged) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('変更がありません')));
+      return;
+    }
+
     try {
       setState(() => _submitError = null);
       final updated = await ref
@@ -92,7 +106,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('保存しました')));
-      
+
       // 保存後に前の画面に戻る
       Navigator.of(context).pop();
       widget.onSave();
@@ -132,9 +146,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
         : const CircleAvatar(radius: 44, child: Icon(Icons.person));
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('プロフィール編集'),
-      ),
+      appBar: AppBar(title: const Text('プロフィール編集')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),

@@ -47,8 +47,8 @@ func TestGetMatches_Safe(t *testing.T) {
 			if m.UserID != user2ID {
 				t.Fatalf("expected userID %s, got %s", user2ID, m.UserID)
 			}
-			if m.Username == "" || m.IconURL == "" || m.WorkImageURL == "" {
-				t.Fatalf("expected non-empty username/icon/workImage, got %+v", m)
+			if m.Username == "" || m.IconURL == "" || m.WorkImageURL == "" || m.WorkTitle == "" {
+				t.Fatalf("expected non-empty username/icon/workImage/workTitle, got %+v", m)
 			}
 			break
 		}

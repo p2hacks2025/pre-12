@@ -4,8 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../review_screen.dart';
 import '../../upload.dart';
 import '../auth/auth_controller.dart';
+import '../auth/login_page.dart';
 import '../profile/profile_display_page.dart';
+import '../profile/profile_controller.dart';
 import '../review/received_review_list_page.dart';
+import '../review/review_service.dart';
 import 'widgets/work_swipe_deck.dart';
 
 class HomePage extends ConsumerStatefulWidget {
@@ -17,12 +20,7 @@ class HomePage extends ConsumerStatefulWidget {
 
 class _HomePageState extends ConsumerState<HomePage> {
   int _index = 0;
-
-  void _handleLogout() {
-    ref.read(authControllerProvider.notifier).logout();
-    if (!mounted) return;
-    Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
-  }
+  static const double _navBarHeight = 80;
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +31,20 @@ class _HomePageState extends ConsumerState<HomePage> {
       const ReviewListScreen(),
       const UploadArtworkPage(),
       const ReceivedReviewListPage(),
-      ProfileDisplayPage(onLogout: _handleLogout),
+      ProfileDisplayPage(
+        onLogout: () {
+          ref.read(authControllerProvider.notifier).logout();
+          // 状態をリセット
+          ref.invalidate(authControllerProvider);
+          ref.invalidate(profileControllerProvider);
+          ref.invalidate(receivedReviewsProvider);
+
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const LoginPage()),
+            (route) => false,
+          );
+        },
+      ),
     ];
 
     return Scaffold(
@@ -49,6 +60,10 @@ class _HomePageState extends ConsumerState<HomePage> {
         onDestinationSelected: (value) {
           setState(() => _index = value);
         },
+        height: _navBarHeight,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        indicatorColor: _NavBarStyle.indicatorColor,
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.home_outlined),
@@ -61,8 +76,8 @@ class _HomePageState extends ConsumerState<HomePage> {
             label: 'レビューする',
           ),
           NavigationDestination(
-            icon: Icon(Icons.add_box_outlined),
-            selectedIcon: Icon(Icons.add_box),
+            icon: _PostNavIcon(isSelected: false),
+            selectedIcon: _PostNavIcon(isSelected: true),
             label: '投稿',
           ),
           NavigationDestination(
@@ -79,4 +94,60 @@ class _HomePageState extends ConsumerState<HomePage> {
       ),
     );
   }
+}
+
+class _PostNavIcon extends StatelessWidget {
+  const _PostNavIcon({required this.isSelected});
+
+  final bool isSelected;
+  static const double _iconSize = 30;
+  static const double _buttonSize = 52;
+  static const double _liftOffset = -10;
+  static const double _borderOpacity = 0.2;
+  static const double _shadowOpacity = 0.15;
+  static const double _shadowBlur = 12;
+  static const double _shadowOffsetY = 6;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final fillColor =
+        isSelected ? theme.colorScheme.primary : theme.colorScheme.surface;
+    final iconColor =
+        isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.primary;
+
+    return Transform.translate(
+      offset: const Offset(0, _liftOffset),
+      child: Semantics(
+        label: '投稿',
+        selected: isSelected,
+        button: true,
+        child: Container(
+          width: _buttonSize,
+          height: _buttonSize,
+          decoration: BoxDecoration(
+            color: fillColor,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: theme.colorScheme.primary.withOpacity(_borderOpacity),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(_shadowOpacity),
+                blurRadius: _shadowBlur,
+                offset: const Offset(0, _shadowOffsetY),
+              ),
+            ],
+          ),
+          child: Icon(Icons.add, size: _iconSize, color: iconColor),
+        ),
+      ),
+    );
+  }
+}
+
+class _NavBarStyle {
+  const _NavBarStyle._();
+
+  static const Color indicatorColor = Color(0xFFEDE3FF);
 }

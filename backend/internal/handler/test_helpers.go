@@ -129,3 +129,35 @@ func createTestMatch(t testing.TB, user1ID, user2ID, work1ID, work2ID string) st
 
 	return matchID
 }
+
+func createTestReview(t testing.TB, matchID, fromUserID, toUserID, workID, comment string) string {
+	var reviewID string
+	err := db.Pool.QueryRow(
+		context.Background(),
+		`
+		INSERT INTO public.reviews (
+			match_id,
+			from_user_id,
+			to_user_id,
+			work_id,
+			comment
+		)
+		VALUES ($1, $2, $3, $4, $5)
+		RETURNING id
+		`,
+		matchID,
+		fromUserID,
+		toUserID,
+		workID,
+		comment,
+	).Scan(&reviewID)
+	if err != nil {
+		t.Fatalf("failed to create review: %v", err)
+	}
+
+	t.Cleanup(func() {
+		_, _ = db.Pool.Exec(context.Background(), "DELETE FROM public.reviews WHERE id=$1", reviewID)
+	})
+
+	return reviewID
+}

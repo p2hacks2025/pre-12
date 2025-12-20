@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:p2hacks_onyx/features/auth/auth_controller.dart';
 import 'package:p2hacks_onyx/config.dart';
+import 'package:p2hacks_onyx/uri_helpers.dart';
 
 // フロントのみでUIを確認したい場合は true にする
 const bool _useMockReceivedReviews = false;
@@ -55,7 +56,8 @@ class ReceivedReview {
       id: id,
       matchId: matchId,
       userId: userId,
-      userName: json['username'] as String? ??
+      userName:
+          json['username'] as String? ??
           json['user_name'] as String? ??
           'Unknown User',
       iconUrl: json['icon_url'] as String? ?? '',
@@ -207,19 +209,22 @@ class ReviewService {
       return;
     }
 
-    final uri = base
-        .resolve('/reviews')
-        .replace(queryParameters: <String, String>{'user_id': user.id});
+    final uri = joinBasePath(
+      base,
+      '/reviews',
+    ).replace(queryParameters: <String, String>{'user_id': user.id});
 
     try {
-      final response = await http.get(
-        uri,
-        headers: {
-          'Content-Type': 'application/json',
-          // TODO: 認証トークンを追加
-          // 'Authorization': 'Bearer $token',
-        },
-      );
+      final response = await http
+          .get(
+            uri,
+            headers: {
+              'Content-Type': 'application/json',
+              // TODO: 認証トークンを追加
+              // 'Authorization': 'Bearer $token',
+            },
+          )
+          .timeout(const Duration(seconds: 8));
 
       if (response.statusCode == 200) {
         final decoded = json.decode(response.body);

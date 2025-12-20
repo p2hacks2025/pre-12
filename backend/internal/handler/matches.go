@@ -15,6 +15,7 @@ type MatchResponse struct {
 	Username     string `json:"username"`
 	IconURL      string `json:"icon_url"`
 	WorkImageURL string `json:"work_image_url"`
+	WorkTitle    string `json:"work_title"`
 }
 
 func GetMatches(c *gin.Context) {
@@ -32,7 +33,8 @@ func GetMatches(c *gin.Context) {
 		  u.id AS user_id,
 		  u.username,
 		  u.icon_path,
-		  w.image_path AS work_image_path
+		  w.image_path AS work_image_path,
+		  w.title AS work_title
 		FROM public.matches m
 		JOIN public.users u
 		  ON u.id = CASE
@@ -65,6 +67,7 @@ func GetMatches(c *gin.Context) {
 			&m.Username,
 			&iconPath,
 			&workPath,
+			&m.WorkTitle,
 		); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return

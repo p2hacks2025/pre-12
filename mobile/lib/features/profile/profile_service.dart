@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
 import '../../config.dart';
+import '../../uri_helpers.dart';
 import 'profile_models.dart';
 
 class ProfileService {
@@ -23,8 +24,7 @@ class ProfileService {
     if (backendBaseUrl.trim().isEmpty) return null;
 
     final base = _baseUri();
-    final uri = base
-        .resolve('/me')
+    final uri = joinBasePath(base, '/me')
         .replace(queryParameters: <String, String>{'user_id': userId});
 
     final client = _client ?? http.Client();
@@ -62,8 +62,7 @@ class ProfileService {
     }
 
     final base = _baseUri();
-    final uri = base
-        .resolve('/update-profile')
+    final uri = joinBasePath(base, '/update-profile')
         .replace(queryParameters: <String, String>{'user_id': userId});
 
     final req = http.MultipartRequest('POST', uri);
@@ -104,8 +103,7 @@ class ProfileService {
       throw Exception('BACKEND_BASE_URL が不正です: $backendBaseUrl');
     }
 
-    final uri = base
-        .resolve('/my-works')
+    final uri = joinBasePath(base, '/my-works')
         .replace(queryParameters: <String, String>{'user_id': userId});
 
     final client = _client ?? http.Client();

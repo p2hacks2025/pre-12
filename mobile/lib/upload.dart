@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 
 import 'config.dart';
 import 'features/auth/auth_controller.dart';
+import 'uri_helpers.dart';
 import 'widgets/inline_error_banner.dart';
 
 class UploadArtworkPage extends ConsumerStatefulWidget {
@@ -153,7 +154,7 @@ class _UploadArtworkPageState extends ConsumerState<UploadArtworkPage> {
         return;
       }
 
-      final uri = base.resolve(uploadPath);
+      final uri = joinBasePath(base, uploadPath);
 
       Uint8List bytes;
       if (_fileBytes != null) {

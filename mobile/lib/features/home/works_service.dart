@@ -1,8 +1,10 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '../../config.dart';
+import '../../uri_helpers.dart';
 import 'models.dart';
 
 class WorksService {
@@ -12,8 +14,11 @@ class WorksService {
 
   Future<List<Work>> getWorks({required String userId}) async {
     if (backendBaseUrl.trim().isEmpty) {
-      await Future<void>.delayed(const Duration(milliseconds: 250));
-      return _dummyWorks;
+      if (kDebugMode) {
+        await Future<void>.delayed(const Duration(milliseconds: 250));
+        return _dummyWorks;
+      }
+      throw Exception('BACKEND_BASE_URL が未設定です');
     }
 
     final Uri base;
@@ -23,8 +28,7 @@ class WorksService {
       throw Exception('BACKEND_BASE_URL が不正です: $backendBaseUrl');
     }
 
-    final uri = base
-        .resolve('/works')
+    final uri = joinBasePath(base, '/works')
         .replace(queryParameters: <String, String>{'user_id': userId});
 
     final client = _client ?? http.Client();
@@ -71,7 +75,7 @@ class WorksService {
       throw Exception('BACKEND_BASE_URL が不正です: $backendBaseUrl');
     }
 
-    final uri = base.resolve('/swipe');
+    final uri = joinBasePath(base, '/swipe');
     final client = _client ?? http.Client();
     try {
       final res = await client
