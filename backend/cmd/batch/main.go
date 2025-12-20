@@ -25,10 +25,11 @@ func main() {
 
 	log.Println("Buckets created, starting batch processes...")
 
-	batch.InsertDummyUsers()
-	batch.InsertDummyWorks()
-	batch.UploadDefaultIcon()
-	batch.UploadIconsFromLocal()
-	batch.UploadWorksFromLocal()
-	batch.InsertDummySwipesAndMatches()
+	//batch.InsertDummyUsers()
+	//batch.InsertDummyWorks()
+	//batch.UploadDefaultIcon()
+	//batch.UploadIconsFromLocal()
+	//batch.UploadWorksFromLocal()
+	//batch.InsertDummySwipesAndMatches()
+	batch.InsertDummyReviews()
 }
